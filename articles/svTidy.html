@@ -121,6 +121,61 @@ frames in a tidy way (like {dplyr} and {tidyr}), but faster and by
 evaluating its arguments in a standard way, or by mean of formulas for
 data-masking and tidyselect.</p>
 </blockquote>
+<div class="section level2">
+<h2 id="how-to-convert-tidyverse-code">How to convert tidyverse code?<a class="anchor" aria-label="anchor" href="#how-to-convert-tidyverse-code"></a>
+</h2>
+<p>You have only a few rules to remember to convert Tidyverse code using
+{dplyr} and/or {tidyr} into {svTidy} code:</p>
+<ul>
+<li><p>append ’_’ at the end of the function name (ex.:
+<code>select()</code> -&gt; <code><a href="../reference/sciviews_functions.html">select_()</a></code>), and make sure that
+{svTidy} is loaded higher in the search path than {dplyr} and
+{tidyr}.</p></li>
+<li>
+<p>either:</p>
+<ul>
+<li>Convert the arguments into standard evaluation -SE- (name of
+variables between quotes and <code>df$var</code> instead of
+<code>var</code> for a column named “var” in a data frame
+<code>df</code>), or</li>
+<li>Use formulas for non-standard evaluation -NSE-: use a tilde
+<code>~</code> in front of your NSE code and <em>do not</em> quote
+variable names. You can keep <code>~var</code>instead of
+<code>df$var</code>.</li>
+</ul>
+</li>
+<li><p>Use “fast” collapse functions instead of base equivalent (for
+instance, <code>fmean()</code>instead of <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean()</a></code>). In fact,
+you can continue to use base function, but you will not benefit from the
+speed increase of the fast functions, especially if your code involves
+grouped data.</p></li>
+<li><p>The ’_’ function automatically ungroup the data at the enc, on
+the contrary to their Tidyverse equivalent [note: not true for all
+functions for now, check your results].</p></li>
+<li><p>You benefit from referential transparency in SE mode: if
+<code>x &lt;- 'var'</code>, you can use <code>x</code> instead of
+<code>'var'</code> everywhere. You do not need to “embrace” the
+argument, like this <code>{{ x }}</code> (only required in Tidyverse
+functions). Idem for formulas: write <code>x &lt;- ~var</code>, and you
+can use <code>x</code> everywhere instead of <code>~var</code>.</p></li>
+<li><p>To rename variables, you replace the (ugly) Tidyverse syntax
+<code>{{varname}} := expr</code> by a two-sided formula:
+<code>varname ~ expr</code>.</p></li>
+<li><p>If a function accepts both a data frame or a vector as first
+argument (e.g., <code><a href="../reference/sciviews_functions.html">replace_na_()</a></code>, you must write
+<code>v = vector</code> if you provide a vector, to mark your intention
+to use it with something else than a data frame.</p></li>
+<li><p>The ’_’ functions are “data-dot”. It means they inject
+<code>.</code> as first argument (usually <code>.data=</code> if no data
+frame is provided.</p></li>
+<li><p>You cannot mix SE code and NSE code through formulas. Either use
+SE code for all arguments, or formulas only.</p></li>
+<li><p>Formulas are converted into expressions that are evaluated in the
+environment where the first provided formula was created. If you need an
+evaluation in a different environment, you can use
+<code>retarget(formula)</code> to change its environment.</p></li>
+</ul>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -74,7 +74,7 @@ speedy and SciViews functions in the same pipeline."><meta property="og:image" c
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>SciViews functions (mainly from collapse and data.table) to manipulate data frames</h1>
-    <small class="dont-index">Source: <a href="https://github.com/SciViews/svTidy/blob/main/R/tidy_functions.R" class="external-link"><code>R/tidy_functions.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/SciViews/svTidy/blob/main/R/sciviews_functions.R" class="external-link"><code>R/sciviews_functions.R</code></a></small>
     <div class="hidden name"><code>sciviews_functions.Rd</code></div>
     </div>
 
@@ -845,16 +845,16 @@ indication of the return values.</p>
     </div>
     <div id="note">
     <h2>Note</h2>
-    <p>The <code>ssummarise()</code> function does not support <code>n()</code> as does
-<code><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">dplyr::summarise()</a></code>. You can use <code>fn()</code> instead, but then, you must give a
-variable name as argument. The <code>fn()</code> alternative can also be used in
-<code>summarise()</code> for homogeneous syntax between the two.
-From {dplyr}, the <code>slice()</code> and <code>slice_xxx()</code> functions are not added yet
-because they are not available for {dbplyr}. Also <code>anti_join()</code>,
-<code>semi_join()</code> and <code>nest_join()</code> are not implemented yet.
-From {tidyr} <code>expand()</code>, <code>chop()</code>, <code>unchop()</code>, <code>nest()</code>, <code>unnest()</code>,
-<code>unnest_longer()</code>, <code>unnest_wider()</code>, <code>hoist()</code>, <code>pack()</code> and <code>unpack()</code> are
-not implemented yet.</p>
+    <p>The <code>summarise_()</code> function does not support <code>n()</code> as does
+<code><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">dplyr::summarise()</a></code>. You can use <code><a href="https://www.sciviews.org/svBase/reference/fstat_functions.html" class="external-link">svBase::fn()</a></code> instead, but then, you must
+give a variable name as argument. The <code><a href="https://www.sciviews.org/svBase/reference/fstat_functions.html" class="external-link">svBase::fn()</a></code> alternative can also be
+used in <code><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">dplyr::summarise()</a></code> for homogeneous syntax between the two.
+From {dplyr}, the <code>slice_min()</code>, <code>slice_max()</code> and <code>splice_sample()</code>
+functions are not added yet.
+From {tidyr} <code><a href="https://tidyr.tidyverse.org/reference/expand.html" class="external-link">tidyr::expand()</a></code>, <code><a href="https://tidyr.tidyverse.org/reference/chop.html" class="external-link">tidyr::chop()</a></code>, <code><a href="https://tidyr.tidyverse.org/reference/chop.html" class="external-link">tidyr::unchop()</a></code>,
+<code><a href="https://tidyr.tidyverse.org/reference/nest.html" class="external-link">tidyr::nest()</a></code>, <code><a href="https://tidyr.tidyverse.org/reference/unnest.html" class="external-link">tidyr::unnest()</a></code>, <code><a href="https://tidyr.tidyverse.org/reference/unnest_longer.html" class="external-link">tidyr::unnest_longer()</a></code>,
+<code><a href="https://tidyr.tidyverse.org/reference/unnest_wider.html" class="external-link">tidyr::unnest_wider()</a></code>, <code><a href="https://tidyr.tidyverse.org/reference/hoist.html" class="external-link">tidyr::hoist()</a></code>, <code><a href="https://tidyr.tidyverse.org/reference/pack.html" class="external-link">tidyr::pack()</a></code> and
+<code><a href="https://tidyr.tidyverse.org/reference/pack.html" class="external-link">tidyr::unpack()</a></code> are not implemented yet.</p>
     </div>
 
     <div id="ref-examples">
