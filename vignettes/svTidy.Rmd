@@ -1,0 +1,21 @@
+---
+title: "'SciViews::R' - Tidy Functions"
+author: "Philippe Grosjean"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+    fig_caption: yes
+vignette: >
+  %\VignetteIndexEntry{'SciViews::R' - Tidy Functions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(svTidy)
+```
+
+> The {svTidy} package provides a set of functions to manipulate data frames in a tidy way (like {dplyr} and {tidyr}), but faster and by evaluating its arguments in a standard way, or by mean of formulas for data-masking and tidyselect.
