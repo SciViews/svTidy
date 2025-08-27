@@ -10,8 +10,8 @@
 . <- NULL
 
 # We use our own stop_() and warning_(), but renamed
-stop <- svMisc::stop_
-warning <- svMisc::warning_
+stop <- svBase::stop_
+warning <- svBase::warning_
 
 # Same as dplyr::is_grouped_df()
 is_grouped_df <- function(x) {
