@@ -95,16 +95,16 @@
 #'   default), `"up"`, or `"downup"` (first down, then up), `"updown"`
 #'   (the opposite).
 #'
-#' @note The [ssummarise()] function does not support `n()` as does
-#' [dplyr::summarise()]. You can use [fn()] instead, but then, you must give a
-#' variable name as argument. The [fn()] alternative can also be used in
-#' [summarise()] for homogeneous syntax between the two.
-#' From \{dplyr\}, the [slice()] and `slice_xxx()` functions are not added yet
-#' because they are not available for \{dbplyr\}. Also [anti_join()],
-#' [semi_join()] and [nest_join()] are not implemented yet.
-#' From \{tidyr\} [expand()], [chop()], [unchop()], [nest()], [unnest()],
-#' [unnest_longer()], [unnest_wider()], [hoist()], [pack()] and [unpack()] are
-#' not implemented yet.
+#' @note The `summarise_()` function does not support `n()` as does
+#' [dplyr::summarise()]. You can use [svBase::fn()] instead, but then, you must
+#' give a variable name as argument. The [svBase::fn()] alternative can also be
+#' used in [dplyr::summarise()] for homogeneous syntax between the two.
+#' From \{dplyr\}, the `slice_min()`, `slice_max()` and `splice_sample()`
+#' functions are not added yet.
+#' From \{tidyr\} [tidyr::expand()], [tidyr::chop()], [tidyr::unchop()],
+#' [tidyr::nest()], [tidyr::unnest()], [tidyr::unnest_longer()],
+#' [tidyr::unnest_wider()], [tidyr::hoist()], [tidyr::pack()] and
+#' [tidyr::unpack()] are not implemented yet.
 #'
 #' @return See corresponding "non-SciViews" function for the full help page with
 #' indication of the return values.
