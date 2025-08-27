@@ -6,6 +6,8 @@
 \alias{svTidy-package}
 \title{svTidy: 'SciViews::R' - Tidy Functions}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 SciViews equivalent functions of 'dplyr' and 'tidyr', but faster and using a standard evaluation of arguments or formulas.
 }
 \seealso{

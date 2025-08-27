@@ -19,3 +19,29 @@ library(svTidy)
 ```
 
 > The {svTidy} package provides a set of functions to manipulate data frames in a tidy way (like {dplyr} and {tidyr}), but faster and by evaluating its arguments in a standard way, or by mean of formulas for data-masking and tidyselect.
+
+## How to convert tidyverse code?
+
+You have only a few rules to remember to convert Tidyverse code using {dplyr} and/or {tidyr} into {svTidy} code:
+
+- append '_' at the end of the function name (ex.: `select()` -> `select_()`), and make sure that {svTidy} is loaded higher in the search path than {dplyr} and {tidyr}.
+
+- either:
+    * Convert the arguments into standard evaluation -SE- (name of variables between quotes and `df$var` instead of `var` for a column named "var" in a data frame `df`), or
+    * Use formulas for non-standard evaluation -NSE-: use a tilde `~` in front of your NSE code and *do not* quote variable names. You can keep  `~var`instead of `df$var`.
+
+- Use "fast" collapse functions instead of base equivalent (for instance, `fmean()`instead of `mean()`). In fact, you can continue to use base function, but you will not benefit from the speed increase of the fast functions, especially if your code involves grouped data.
+
+- The '_' function automatically ungroup the data at the enc, on the contrary to their Tidyverse equivalent [note: not true for all functions for now, check your results].
+
+- You benefit from referential transparency in SE mode: if `x <- 'var'`, you can use `x` instead of `'var'` everywhere. You do not need to "embrace" the argument, like this `{{ x }}` (only required in Tidyverse functions). Idem for formulas: write `x <- ~var`, and you can use `x` everywhere instead of `~var`.
+
+- To rename variables, you replace the (ugly) Tidyverse syntax `{{varname}} := expr` by a two-sided formula: `varname ~ expr`.
+
+- If a function accepts both a data frame or a vector as first argument (e.g., `replace_na_()`, you must write `v = vector` if you provide a vector, to mark your intention to use it with something else than a data frame.
+
+- The '_' functions are "data-dot". It means they inject `.` as first argument (usually `.data=` if no data frame is provided.
+
+- You cannot mix SE code and NSE code through formulas. Either use SE code for all arguments, or formulas only.
+
+- Formulas are converted into expressions that are evaluated in the environment where the first provided formula was created. If you need an evaluation in a different environment, you can use `retarget(formula)` to change its environment.

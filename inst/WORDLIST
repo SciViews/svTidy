@@ -4,6 +4,7 @@ dplyr
 dplyr's
 GRP
 na
+NSE
 ORCID
 perl
 SciViews
@@ -15,3 +16,4 @@ tidyr
 tidyselect
 tidyverse
 uncount
+ungroup

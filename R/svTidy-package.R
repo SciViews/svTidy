@@ -5,7 +5,7 @@
 #' @importFrom cli cli_abort col_red
 #' @importFrom data.table as.data.table copy haskey key rbindlist setattr setDT setkeyv setorderv
 #' @importFrom data.trame as.data.trame data.trame is.data.trame let_data.trame_to_data.table let_data.table_to_data.trame
-#' @importFrom svBase as_dtbl as_dtf is_dtbl is_dtf is_dtrm process_error_msg
+#' @importFrom svBase as_dtbl as_dtf is_dtbl is_dtf is_dtrm formula_masking formula_select process_error_msg
 #' @importFrom utils type.convert
 #' @importFrom tibble as_tibble is_tibble tibble tribble
 #' @importFrom tidyselect eval_select
