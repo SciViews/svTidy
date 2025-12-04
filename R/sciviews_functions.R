@@ -3075,6 +3075,11 @@ separate_ <- structure(function(.data = (.), col, into, sep = "[^[:alnum:]]+",
   if (!is.character(into) || length(into) < 2L)
     stop("{.arg into} must be a character vector of length >= 2, not {.obj_type_friendly {into}} ({.val {into}}).")
   l_into <- length(into)
+  l_new_cols <- sum(!is.na(into))
+  # This is not done in separate(), but it is crazy to keep NO columns!
+  if (l_new_cols == 0)
+    stop("{.arg into} cannot contain only missing values (NA)",
+      i = "To get rid of the column {.val {col_name}}, use {.code select_()} instead.")
 
   if (length(extra) != 1L || !is.character(extra) || is.na(extra) ||
       !any(extra == c("warn", "drop", "merge")))
@@ -3175,7 +3180,8 @@ separate_ <- structure(function(.data = (.), col, into, sep = "[^[:alnum:]]+",
   }
 
   # New variables are added after col_num
-  pos <- if (col_num == ncol(.data)) "end" else (col_num + 1L):(col_num + l_into)
+  pos <- if (col_num == ncol(.data)) "end" else
+    (col_num + 1L):(col_num + l_new_cols)
   add_vars_args <- list(x = .data, cols, pos = pos)
   res <- do.call(add_vars, add_vars_args)
 
