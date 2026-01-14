@@ -200,6 +200,9 @@ mutate_ <- structure(function(.data = (.), ..., .by = NULL,
 #' @rdname mutating
 transmute_ <- structure(function(.data, ...) {
   .__top_call__. <- TRUE
+  if (...length() == 0L)
+    return(.data[, 0L, drop = FALSE]) # Return 0-column data frame
+
   do.call(mutate_, list(.data, ..., .keep = "none"), envir = parent.frame())
 }, class = c("function", "sciviews_fn"),
   comment = .src_sciviews("dplyr::transmute"))

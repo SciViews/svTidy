@@ -283,7 +283,9 @@ test_that("bind_cols_() handles .name_repair parameter", {
   df2 <- data.frame(x = 4:6, z = LETTERS[1:3])
 
   # Test with unique names
-  result_unique <- bind_cols_(df1, df2, .name_repair = "unique")
+  expect_message(result_unique <- bind_cols_(df1, df2, .name_repair = "unique"),
+    "New names:"
+  )
   expect_true(all(!duplicated(names(result_unique))))
   expect_equal(ncol(result_unique), 4)
 
@@ -292,7 +294,10 @@ test_that("bind_cols_() handles .name_repair parameter", {
   expect_equal(sum(names(result_minimal) == "x"), 2)
 
   # Test with universal names
-  result_universal <- bind_cols_(df1, df2, .name_repair = "universal")
+  expect_message(result_universal <- bind_cols_(df1, df2,
+    .name_repair = "universal"),
+    "New names:"
+  )
   expect_true(all(!duplicated(names(result_universal))))
   expect_true(all(make.names(names(result_universal)) == names(result_universal)))
 })
