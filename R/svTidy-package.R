@@ -10,9 +10,9 @@
 #' @importFrom tibble as_tibble is_tibble tibble tribble
 #' @importFrom tidyselect eval_select
 #' @importFrom svMisc assign_temp temp_env rm_temp
-#' @importFrom dplyr arrange group_by anti_join full_join inner_join left_join right_join semi_join
+#' @importFrom dplyr arrange bind_cols bind_rows group_by anti_join full_join inner_join left_join right_join semi_join
 #' @importFrom tidyr extract
-#' @importFrom collapse add_vars allNA anyv ckmatch fcount fcountv fgroup_vars fndistinct fnobs fmatch fmutate fselect fsum fsummarise frename  fslicev fsubset fungroup funique get_collapse get_vars group_by_vars greorder GRP GRPid GRPN gsplit join na_omit na_rm replace_na pivot rowbind roworder qDF qDT qTBL roworderv seq_row setv ss fgroup_by  unlist2d vlengths whichv
+#' @importFrom collapse add_vars allNA anyv ckmatch fcount fcountv fgroup_vars fndistinct fnobs fmatch fmutate fselect fsum fsummarise frename fslicev fsubset fungroup funique get_collapse get_vars group_by_vars greorder GRP GRPid GRPN gsplit join na_omit na_rm replace_na pivot rowbind roworder qDF qDT qTBL roworderv seq_row setv ss fgroup_by  unlist2d vlengths whichv
 #' @importFrom rlang `%||%` abort call2 caller_env check_dots_empty check_dots_unnamed env_name eval_bare expr expr_deparse expr_text f_env f_name f_lhs f_rhs inject is_formula is_integerish rep_along warn
 ## usethis namespace: end
 NULL

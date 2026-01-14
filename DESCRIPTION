@@ -1,6 +1,6 @@
 Package: svTidy
 Type: Package
-Version: 0.1.1
+Version: 0.2.0
 Title: 'SciViews::R' - Tidy Functions
 Description: SciViews equivalent functions of 'dplyr' and 'tidyr', but faster
   and using a standard evaluation of arguments or formulas.

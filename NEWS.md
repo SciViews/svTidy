@@ -1,3 +1,7 @@
+# svTidy 0.2.0
+
+*   Refactoring of the man pages (and splitting of SciViews functions into separate script files).
+
 # svTidy 0.1.1
 
 *   A bug in `separate_()` is corrected: when `into=` contains `NA` and the data frame contains other columns, insertion of new columns failed.
