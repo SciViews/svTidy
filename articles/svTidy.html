@@ -86,7 +86,7 @@
 </li>
       </ul>
 <div class="navbar-title">
-        <a class="navbar-brand" href="../index.html"><p class="h2">svTidy <small>v0.1.1</small></p></a>
+        <a class="navbar-brand" href="../index.html"><p class="h2">svTidy <small>v0.2.0</small></p></a>
       </div>
     </div>
 <!--/.nav-collapse -->
@@ -106,7 +106,7 @@
                         <h4 data-toc-skip class="author">Philippe
 Grosjean</h4>
             
-            <h4 data-toc-skip class="date">2025-12-04</h4>
+            <h4 data-toc-skip class="date">2026-01-14</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/SciViews/svTidy/blob/main/vignettes/svTidy.Rmd" class="external-link"><code>vignettes/svTidy.Rmd</code></a></small>
       <div class="hidden name"><code>svTidy.Rmd</code></div>
@@ -128,7 +128,7 @@ data-masking and tidyselect.</p>
 {dplyr} and/or {tidyr} into {svTidy} code:</p>
 <ul>
 <li><p>append ’_’ at the end of the function name (ex.:
-<code>select()</code> -&gt; <code><a href="../reference/sciviews_functions.html">select_()</a></code>), and make sure that
+<code>select()</code> -&gt; <code><a href="../reference/selecting.html">select_()</a></code>), and make sure that
 {svTidy} is loaded higher in the search path than {dplyr} and
 {tidyr}.</p></li>
 <li>
@@ -162,7 +162,7 @@ can use <code>x</code> everywhere instead of <code>~var</code>.</p></li>
 <code>{{varname}} := expr</code> by a two-sided formula:
 <code>varname ~ expr</code>.</p></li>
 <li><p>If a function accepts both a data frame or a vector as first
-argument (e.g., <code><a href="../reference/sciviews_functions.html">replace_na_()</a></code>, you must write
+argument (e.g., <code><a href="../reference/tidying.html">replace_na_()</a></code>, you must write
 <code>v = vector</code> if you provide a vector, to mark your intention
 to use it with something else than a data frame.</p></li>
 <li><p>The ’_’ functions are “data-dot”. It means they inject

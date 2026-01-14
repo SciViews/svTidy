@@ -57,7 +57,7 @@
   </a>
 </li>
       </ul><div class="navbar-title">
-        <a class="navbar-brand" href="../index.html"><p class="h2">svTidy <small>v0.1.1</small></p></a>
+        <a class="navbar-brand" href="../index.html"><p class="h2">svTidy <small>v0.2.0</small></p></a>
       </div>
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -75,9 +75,13 @@
     </div>
 
     <div class="section level2">
+<h2 class="page-header" data-toc-text="0.2.0" id="svtidy-020">svTidy 0.2.0<a class="anchor" aria-label="anchor" href="#svtidy-020"></a></h2>
+<ul><li>Refactoring of the man pages (and splitting of SciViews functions into separate script files).</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="page-header" data-toc-text="0.1.1" id="svtidy-011">svTidy 0.1.1<a class="anchor" aria-label="anchor" href="#svtidy-011"></a></h2>
-<ul><li><p>A bug in <code><a href="../reference/sciviews_functions.html">separate_()</a></code> is corrected: when <code>into=</code> contains <code>NA</code> and the data frame contains other columns, insertion of new columns failed.</p></li>
-<li><p>On the contrary to <code><a href="https://tidyr.tidyverse.org/reference/separate.html" class="external-link">tidyr::separate()</a></code>, <code><a href="../reference/sciviews_functions.html">separate_()</a></code> does not allow any more all <code>NA</code> values for the <code>into=</code> argument (meaning we want to keep none of the separated columns). It raises an error with a tip to use <code><a href="../reference/sciviews_functions.html">select_()</a></code> instead to eliminate a column from the data frame.</p></li>
+<ul><li><p>A bug in <code><a href="../reference/tidying.html">separate_()</a></code> is corrected: when <code>into=</code> contains <code>NA</code> and the data frame contains other columns, insertion of new columns failed.</p></li>
+<li><p>On the contrary to <code><a href="https://tidyr.tidyverse.org/reference/separate.html" class="external-link">tidyr::separate()</a></code>, <code><a href="../reference/tidying.html">separate_()</a></code> does not allow any more all <code>NA</code> values for the <code>into=</code> argument (meaning we want to keep none of the separated columns). It raises an error with a tip to use <code><a href="../reference/selecting.html">select_()</a></code> instead to eliminate a column from the data frame.</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.1.0" id="svtidy-010">svTidy 0.1.0<a class="anchor" aria-label="anchor" href="#svtidy-010"></a></h2>
