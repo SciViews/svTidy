@@ -89,6 +89,11 @@ test_that("bind_rows_() handles .use_names parameter", {
   result <- bind_rows_(df1, df2, .use_names = FALSE)
   expect_equal(result$a, c(1, 2, 5, 6))
   expect_equal(result$b, c(3, 4, 7, 8))
+
+  # .use.names = NULL - same as TRUE
+  result <- bind_rows_(df1, df2, .use_names = NULL)
+  expect_equal(result$a, c(1, 2, 7, 8))
+  expect_equal(result$b, c(3, 4, 5, 6))
 })
 
 test_that("bind_rows_() handles list input", {
@@ -105,6 +110,28 @@ test_that("bind_rows_() handles list input", {
   result <- bind_rows_(list(a = df1, b = df2), .id = "source")
   expect_equal(result$source, c("a", "a", "b", "b"))
 })
+
+test_that("bind_rows_() handles something else than data frames", {
+  df1 <- data.frame(x = 1:3, y = 4:6)
+  l2 <- list(x = 7:9, y = 10:12)
+
+  result <- bind_rows_(df1, l2)
+
+  expect_equal(nrow(result), 6L)
+  expect_equal(ncol(result), 2L)
+  expect_equal(names(result), c("x", "y"))
+  expect_s3_class(result, "data.frame")
+
+  # Even with the first item not being a data.frame
+  result <- bind_rows_(l2, df1)
+
+  expect_equal(nrow(result), 6L)
+  expect_equal(ncol(result), 2L)
+  expect_equal(names(result), c("x", "y"))
+  expect_s3_class(result, "data.frame")
+
+})
+
 
 test_that("bind_rows_() handles empty input", {
   # No arguments
@@ -469,19 +496,34 @@ test_that("bind_cols_() works with many data frames", {
   expect_equal(names(result), paste0("col", 1:15))
 })
 
-test_that("bind_cols_() handles empty data frames mixed with non-empty", {
+test_that("bind_cols_() handles something else than data frames", {
   df1 <- data.frame(x = 1:3, y = 4:6)
-  df2 <- data.frame(z = integer(), w = character())
+  l2 <- list(z = 7:9, w = 10:12)
 
-  expect_error(
-    bind_cols_(df1, df2),
-    "Can't recycle"
-  )
+  result <- bind_cols_(df1, l2)
 
-  # But zero-row data frames can be bound together
-  df3 <- data.frame(a = integer())
-  df4 <- data.frame(b = character())
-  result <- bind_cols_(df3, df4)
-  expect_equal(nrow(result), 0)
-  expect_equal(ncol(result), 2)
+  expect_equal(nrow(result), 3L)
+  expect_equal(ncol(result), 4L)
+  expect_equal(names(result), c("x", "y", "z", "w"))
+  expect_s3_class(result, "data.frame")
+
+  # Even with the first item not being a data.frame
+  result <- bind_cols_(l2, df1)
+
+  expect_equal(nrow(result), 3L)
+  expect_equal(ncol(result), 4L)
+  expect_equal(names(result), c("z", "w", "x", "y"))
+  expect_s3_class(result, "data.frame")
+
+})
+
+test_that("bind_cols_() handles data frames with different column names", {
+  df1 <- data.frame(alpha = 1:3, beta = 4:6)
+  df2 <- data.frame(gamma = 7:9, delta = 10:12)
+  df3 <- data.frame(epsilon = 13:15)
+
+  result <- bind_cols_(df1, df2, df3)
+
+  expect_equal(ncol(result), 5)
+  expect_equal(names(result), c("alpha", "beta", "gamma", "delta", "epsilon"))
 })

@@ -221,9 +221,8 @@ Functions for joining two data frames based on matching values in key columns.
 These are SciViews::R versions of tidyverse functions with standard
 evaluation and formula-based non-standard evaluation (ending with underscore
 \verb{_}). They work with data.frame, data.table, and tibbles.
-}
-\section{Functions}{
 
+\strong{Functions:}
 \itemize{
 \item \code{left_join_()} - Keep all rows from x, add matching columns from y
 \item \code{right_join_()} - Keep all rows from y, add matching columns from x
@@ -234,7 +233,6 @@ evaluation and formula-based non-standard evaluation (ending with underscore
 \item \code{join_()} - Generic join function with \code{how} parameter
 }
 }
-
 \examples{
 library(svTidy)
 

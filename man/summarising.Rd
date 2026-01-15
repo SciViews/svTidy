@@ -131,15 +131,8 @@ Functions for summarising data and counting observations in data frames.
 These are SciViews::R versions of tidyverse functions with standard
 evaluation and formula-based non-standard evaluation (ending with underscore
 \verb{_}). They work with data.frame, data.table, and tibbles.
-}
-\note{
-The \code{summarise_()} function does not support \code{n()} as does \code{\link[dplyr:summarise]{dplyr::summarise()}}.
-You can use \code{\link[svBase:fstat_functions]{svBase::fn()}} instead, but then you must give a variable name as
-argument. The \code{\link[svBase:fstat_functions]{svBase::fn()}} alternative can also be used in \code{\link[dplyr:summarise]{dplyr::summarise()}}
-for homogeneous syntax between the two.
-}
-\section{Functions}{
 
+\strong{Functions:}
 \itemize{
 \item \code{summarise_()} / \code{summarize_()} - Compute summary statistics for groups
 \item \code{reframe_()} - Similar to summarise but always returns ungrouped data
@@ -149,7 +142,12 @@ for homogeneous syntax between the two.
 \item \code{add_tally_()} - Add total count column to data frame
 }
 }
-
+\note{
+The \code{summarise_()} function does not support \code{n()} as does \code{\link[dplyr:summarise]{dplyr::summarise()}}.
+You can use \code{\link[svBase:fstat_functions]{svBase::fn()}} instead, but then you must give a variable name as
+argument. The \code{\link[svBase:fstat_functions]{svBase::fn()}} alternative can also be used in \code{\link[dplyr:summarise]{dplyr::summarise()}}
+for homogeneous syntax between the two.
+}
 \examples{
 library(svTidy)
 data(mtcars)

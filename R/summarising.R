@@ -7,7 +7,7 @@
 #' evaluation and formula-based non-standard evaluation (ending with underscore
 #' `_`). They work with data.frame, data.table, and tibbles.
 #'
-#' @section Functions:
+#' **Functions:**
 #' * `summarise_()` / `summarize_()` - Compute summary statistics for groups
 #' * `reframe_()` - Similar to summarise but always returns ungrouped data
 #' * `count_()` - Count observations by group
@@ -373,11 +373,15 @@ count_ <- structure(function(.data = (.), ..., wt = NULL, name = "n",
     }
     if (isTRUE(add)) {
       res <- .data
-      res[[name]] <- n
+      if (nrow(res) == 0L) {
+        res[[name]] <- numeric(0)
+      } else {
+        res[[name]] <- n
+      }
     } else {# Just return n
-      res <- .data[1L, 1L]
+      res <- .data[1L, 1L, drop = FALSE]
       names(res) <- name
-      res[[name]] <- nrow(.data)
+      res[[name]] <- n
     }
     return(res)
   }
@@ -434,6 +438,7 @@ count_ <- structure(function(.data = (.), ..., wt = NULL, name = "n",
 
   #if (to_dtrm)
   #  let_data.table_to_data.trame(res)
+
   res
 }, class = c("function", "sciviews_fn"),
   comment = .src_sciviews("dplyr::count"))

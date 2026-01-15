@@ -7,7 +7,7 @@
 #' evaluation and formula-based non-standard evaluation (ending with underscore
 #' `_`). They work with data.frame, data.table, and tibbles.
 #'
-#' @section Functions:
+#' **Functions:**
 #' * `group_by_()` - Group data by one or more variables
 #' * `ungroup_()` - Remove grouping variables
 #' * `group_vars_()` - Get names or info about grouping variables
@@ -19,6 +19,7 @@
 #' * `group_size_()` - Get number of rows in each group
 #' * `n_groups_()` - Get total number of groups
 #' * `as.grouped_df()` / `as_grouped_df()` - Convert to grouped_df object
+#' * `is.grouped_df()` - Test if object is a grouped_df
 #'
 #' @param .data A data frame (data.frame, data.table, or tibble)
 #' @param ... For `group_by_()`: grouping variables as formulas (e.g., `~cyl`)
@@ -42,7 +43,11 @@
 #' @param return For `group_vars_()`: what to return - `"names"` (default),
 #'   `"data"`, `"unique"`, `"indices"`, `"named_indices"`, `"logical"`, or
 #'   `"named_logical"`.
-#' @param x An object to convert to grouped_df
+#' @param x An object to convert to **grouped_df**, or to check as such
+#' @param collapse Logical. If `TRUE`, check if it is a special version of
+#'   **grouped_df** build by `group_by_()` or [collapse::fgroup_by()], that is,
+#'   a **GRP_df** object only partly compatible with an object obtained with
+#'   [dplyr::group_by()].
 #'
 #' @return
 #' * `group_by_()` returns a grouped data frame (GRP_df or grouped_df class)
@@ -552,4 +557,13 @@ print.grouped_df <- function(x, ...) {
   invisible(x)
 }
 
+#' @export
+#' @rdname grouping
+is.grouped_df <- function(x, collapse = FALSE) {
+  if (isTRUE(collapse)) {
+    inherits(x, "GRP_df")
+  } else {
+    inherits(x, "grouped_df")
+  }
+}
 

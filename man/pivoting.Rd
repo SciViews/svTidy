@@ -104,15 +104,13 @@ Functions for pivoting data between long and wide formats.
 These are SciViews::R versions of tidyverse functions with standard
 evaluation and formula-based non-standard evaluation (ending with underscore
 \verb{_}). They work with data.frame, data.table, and tibbles.
-}
-\section{Functions}{
 
+\strong{Functions:}
 \itemize{
 \item \code{pivot_longer_()} - Convert data from wide to long format
 \item \code{pivot_wider_()} - Convert data from long to wide format
 }
 }
-
 \examples{
 library(svTidy)
 

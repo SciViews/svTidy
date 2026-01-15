@@ -7,7 +7,7 @@
 #' evaluation and formula-based non-standard evaluation (ending with underscore
 #' `_`). They work with data.frame, data.table, and tibbles.
 #'
-#' @section Functions:
+#' **Functions:**
 #' * `separate_()` - Separate one column into multiple columns by splitting on a separator
 #' * `unite_()` - Unite multiple columns into one by pasting strings together
 #' * `fill_()` - Fill missing values using previous or next non-missing value
@@ -343,7 +343,7 @@ separate_ <- structure(function(.data = (.), col, into, sep = "[^[:alnum:]]+",
   res <- do.call(add_vars, add_vars_args)
 
   if (isTRUE(remove)) {
-    res <- res[, -col_num, drop = FALSE]
+    res[[col_num]] <- NULL
   } else if (!isFALSE(remove)) {
     stop("{.arg remove} must be {.code TRUE} or {.code FALSE}, not {.obj_type_friendly {remove}} ({.val {remove}}).")
   }
@@ -414,17 +414,36 @@ unite_ <- structure(function(.data = (.), col, ..., sep = "_", remove = TRUE,
     col_data <- gsub(paste0(sep, "@@@@@"), "", col_data, fixed = TRUE)
     col_data <- sub(paste0("^", "@@@@@", sep, "?"), "", col_data, perl = TRUE)
   } else if (isFALSE(na.rm)) {
-    col_data <- do.call(paste, c(.data[, cols], list(sep = sep)))
+    if (inherits(.data, "data.table")) {
+      col_data <- do.call(paste, c(.data[, ..cols], list(sep = sep)))
+    } else {
+      col_data <- do.call(paste, c(.data[, cols], list(sep = sep)))
+    }
   } else {
     stop("{.arg na.rm} must be {.code TRUE} or {.code FALSE}, not {.obj_type_friendly {na.rm}} ({.val {na.rm}}).")
   }
   # New variable before first old one
   add_vars_args <- list(x = .data, col_data, pos = cols[1])
-  names(add_vars_args)[2] <- col_name
-  res <- do.call(add_vars, add_vars_args)
+  # In cas `x` is in col_name, we end upo with two x arguments -> rename it
+  if (any(col_name == "x")) {
+    col_name[col_name == "x"] <- "xxxxxxxxxxxx"
+    names(add_vars_args)[2] <- col_name
+    res <- do.call(add_vars, add_vars_args)
+    # Restore 'x'
+    names_res <- names(res)
+    names_res[names_res == "xxxxxxxxxxxx"] <- "x"
+    names(res) <- names_res
+  } else {
+    names(add_vars_args)[2] <- col_name
+    res <- do.call(add_vars, add_vars_args)
+  }
 
   if (isTRUE(remove)) {
-    res <- res[, -(cols + 1), drop = FALSE] # Remove columns
+    if (inherits(.data, "data.table")) {
+      res <- res[, .SD, .SDcols = -(cols + 1)] # Remove columns (data.table version)
+    } else {
+      res <- res[, -(cols + 1), drop = FALSE] # Remove columns (data frames)
+    }
   } else if (!isFALSE(remove)) {
     stop("{.arg remove} must be {.code TRUE} or {.code FALSE}, not {.obj_type_friendly {remove}} ({.val {remove}}).")
   }
@@ -699,8 +718,12 @@ uncount_ <- structure(function(.data = (.), weights, ..., .remove = TRUE,
   if (!isTRUE(.remove) && !isFALSE(.remove))
     stop("{.arg .remove} must be {.code TRUE} or {.code FALSE}, not {.obj_type_friendly {(.remove)}} ({.val {(.remove)}}).")
 
-  ind <- rep.int(1:nrow(.data), weights_val)
-  res <- .data[ind, ]
+  if (nrow(.data) == 0L) {
+    res <- .data
+  } else {
+    ind <- rep.int(1:nrow(.data), weights_val)
+    res <- .data[ind, , drop = FALSE]
+  }
   if (.remove && weights_is_col)
     res[[weights]] <- NULL
 

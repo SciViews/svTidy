@@ -3,7 +3,19 @@
 test_that("group_by_() works with single grouping variable", {
   result <- mtcars |> group_by_(~cyl)
 
-  expect_true(inherits(result, "GRP_df"))
+  expect_s3_class(result, "GRP_df")
+  # Should be the same
+  expect_true(is.grouped_df(result, collapse = TRUE))
+  expect_true(is.grouped_df(result, collapse = FALSE))
+  expect_equal(group_vars_(result), "cyl")
+  expect_equal(n_groups_(result), 3)
+
+  # Also test for regular dplyr group_by
+  skip_if_not_installed("dplyr")
+
+  result <- mtcars |> dplyr::group_by(cyl)
+  expect_true(is.grouped_df(result, collapse = FALSE))
+  expect_false(is.grouped_df(result, collapse = TRUE))
   expect_equal(group_vars_(result), "cyl")
   expect_equal(n_groups_(result), 3)
 })
@@ -11,7 +23,7 @@ test_that("group_by_() works with single grouping variable", {
 test_that("group_by_() works with multiple grouping variables", {
   result <- mtcars |> group_by_(~cyl, ~gear)
 
-  expect_true(inherits(result, "GRP_df"))
+  expect_true(is.grouped_df(result, collapse = TRUE))
   expect_equal(group_vars_(result), c("cyl", "gear"))
   expect_equal(n_groups_(result), 8)
 })
@@ -19,7 +31,7 @@ test_that("group_by_() works with multiple grouping variables", {
 test_that("group_by_() works with character column names", {
   result <- mtcars |> group_by_("cyl", "gear")
 
-  expect_true(inherits(result, "GRP_df"))
+  expect_true(is.grouped_df(result, collapse = TRUE))
   expect_equal(group_vars_(result), c("cyl", "gear"))
 })
 
@@ -74,7 +86,8 @@ test_that("ungroup_() removes all grouping", {
   grouped <- mtcars |> group_by_(~cyl, ~gear)
   result <- grouped |> ungroup_()
 
-  expect_false(inherits(result, "GRP_df"))
+  expect_false(is.grouped_df(result, collapse = FALSE))
+  expect_false(is.grouped_df(result, collapse = TRUE))
   expect_equal(nrow(result), nrow(mtcars))
   expect_equal(ncol(result), ncol(mtcars))
 })
@@ -85,7 +98,7 @@ test_that("ungroup_() with specific variables removes those groups", {
     "Regrouping with"
   )
 
-  expect_true(inherits(result, "GRP_df"))
+  expect_true(is.grouped_df(result, collapse = TRUE))
   expect_equal(group_vars_(result), c("cyl", "am"))
 })
 
@@ -169,13 +182,14 @@ test_that("groups_() returns grouping variables as symbols", {
 test_that("group_by_() with empty formula creates no groups", {
   result <- mtcars |> group_by_()
 
-  expect_false(inherits(result, "GRP_df"))
+  expect_false(is.grouped_df(result, collapse = FALSE))
+  expect_false(is.grouped_df(result, collapse = TRUE))
 })
 
 test_that("group_by_() works with computed variables", {
   result <- mtcars |> group_by_(cyl_group = ~ifelse(cyl < 6, "small", "large"))
 
-  expect_true(inherits(result, "GRP_df"))
+  expect_true(is.grouped_df(result, collapse = TRUE))
   expect_true("cyl_group" %in% names(result))
   expect_equal(n_groups_(result), 2)
 })
@@ -187,7 +201,7 @@ test_that("group_by_() with .by parameter creates temporary groups", {
       .by = 'cyl'
     )
 
-  expect_false(inherits(result, "GRP_df"))
+  expect_false(is.grouped_df(result, collapse = FALSE))
   expect_equal(nrow(result), 3)
 })
 
@@ -202,14 +216,15 @@ test_that("group_by_() and ungroup_() roundtrip", {
   grouped <- mtcars |> group_by_(~cyl, ~gear)
   ungrouped <- grouped |> ungroup_()
 
-  expect_false(inherits(ungrouped, "GRP_df"))
+  expect_false(is.grouped_df(ungrouped, collapse = FALSE))
+  expect_false(is.grouped_df(ungrouped, collapse = TRUE))
   expect_equal(ungrouped, mtcars)
 })
 
 test_that("group_by_() with single variable", {
   result <- mtcars |> group_by_(~hp)
 
-  expect_true(inherits(result, "GRP_df"))
+  expect_true(is.grouped_df(result, collapse = TRUE))
   expect_equal(group_vars_(result), "hp")
   expect_equal(n_groups_(result), 22)
 })
@@ -258,7 +273,8 @@ test_that("group_by_() handles factors correctly", {
   )
   result <- df |> group_by_(~x)
 
-  expect_true(inherits(result, "GRP_df"))
+  expect_s3_class(result, "GRP_df")
+  expect_true(is.grouped_df(result, collapse = TRUE))
   expect_equal(n_groups_(result), 2)
 })
 
@@ -269,7 +285,7 @@ test_that("group_by_() handles dates correctly", {
   )
   result <- df |> group_by_(~date)
 
-  expect_true(inherits(result, "GRP_df"))
+  expect_s3_class(result, "GRP_df")
   expect_equal(n_groups_(result), 2)
 })
 
@@ -321,7 +337,7 @@ test_that("group_by_() with NA values in grouping variable", {
   df <- data.frame(x = c(1, 2, NA, 1, 2), y = 1:5)
   result <- df |> group_by_(~x)
 
-  expect_true(inherits(result, "GRP_df"))
+  expect_true(is.grouped_df(result, collapse = TRUE))
   # NA should create its own group
   expect_true(n_groups_(result) >= 2)
 })

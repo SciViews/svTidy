@@ -18,6 +18,7 @@
 \alias{as.grouped_df.grouped_df}
 \alias{as.grouped_df.GRP_df}
 \alias{print.grouped_df}
+\alias{is.grouped_df}
 \title{Grouping Functions and Group Metadata}
 \usage{
 group_by_(
@@ -62,6 +63,8 @@ as_grouped_df(x, ...)
 \method{as.grouped_df}{GRP_df}(x, ...)
 
 \method{print}{grouped_df}(x, ...)
+
+is.grouped_df(x, collapse = FALSE)
 }
 \arguments{
 \item{.data}{A data frame (data.frame, data.table, or tibble)}
@@ -100,7 +103,12 @@ columns, \code{"indices"} or \code{4} for integer indices of grouping columns,
 selection vector of grouping columns, or \code{"named_logical"} or \code{7} for named
 logical.}
 
-\item{x}{An object to convert to grouped_df}
+\item{x}{An object to convert to \strong{grouped_df}, or to check as such}
+
+\item{collapse}{Logical. If \code{TRUE}, check if it is a special version of
+\strong{grouped_df} build by \code{group_by_()} or \code{\link[collapse:GRP]{collapse::fgroup_by()}}, that is,
+a \strong{GRP_df} object only partly compatible with an object obtained with
+\code{\link[dplyr:group_by]{dplyr::group_by()}}.}
 }
 \value{
 \itemize{
@@ -125,9 +133,8 @@ Functions for grouping data frames and accessing group metadata.
 These are SciViews::R versions of tidyverse functions with standard
 evaluation and formula-based non-standard evaluation (ending with underscore
 \verb{_}). They work with data.frame, data.table, and tibbles.
-}
-\section{Functions}{
 
+\strong{Functions:}
 \itemize{
 \item \code{group_by_()} - Group data by one or more variables
 \item \code{ungroup_()} - Remove grouping variables
@@ -140,9 +147,9 @@ evaluation and formula-based non-standard evaluation (ending with underscore
 \item \code{group_size_()} - Get number of rows in each group
 \item \code{n_groups_()} - Get total number of groups
 \item \code{as.grouped_df()} / \code{as_grouped_df()} - Convert to grouped_df object
+\item \code{is.grouped_df()} - Test if object is a grouped_df
 }
 }
-
 \examples{
 library(svTidy)
 data(mtcars)

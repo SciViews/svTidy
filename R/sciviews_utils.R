@@ -17,6 +17,6 @@ list_sciviews_functions <- function() {
     "mutate_", "pivot_longer_", "pivot_wider_", "pull_", "reframe_", "rename_",
     "rename_with_", "replace_na_", "right_join_", "select_", "semi_join",
     "separate_", #"separate_rows_", # TODO
-    "slice_", "summarise_", "summarize_()",
+    "slice_", "summarise_", "summarize_",
     "tally_", "transmute_", "uncount_", "ungroup_", "unite_")
 }

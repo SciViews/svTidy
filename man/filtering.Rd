@@ -61,13 +61,8 @@ Functions for subsetting rows based on conditions or by position.
 These are SciViews::R versions of tidyverse functions with standard
 evaluation and formula-based non-standard evaluation (ending with underscore
 \verb{_}). They work with data.frame, data.table, and tibbles.
-}
-\note{
-From \{dplyr\}, the \code{slice_min()}, \code{slice_max()} and \code{slice_sample()}
-functions are not added yet.
-}
-\section{Functions}{
 
+\strong{Functions:}
 \itemize{
 \item \code{filter_()} - Keep rows that match conditions
 \item \code{distinct_()} - Keep only unique/distinct rows based on columns
@@ -76,7 +71,10 @@ functions are not added yet.
 \item \code{slice_tail_()} - Select last n rows or proportion
 }
 }
-
+\note{
+From \{dplyr\}, the \code{slice_min()}, \code{slice_max()} and \code{slice_sample()}
+functions are not added yet.
+}
 \examples{
 library(svTidy)
 data(mtcars)

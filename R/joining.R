@@ -7,7 +7,7 @@
 #' evaluation and formula-based non-standard evaluation (ending with underscore
 #' `_`). They work with data.frame, data.table, and tibbles.
 #'
-#' @section Functions:
+#' **Functions:**
 #' * `left_join_()` - Keep all rows from x, add matching columns from y
 #' * `right_join_()` - Keep all rows from y, add matching columns from x
 #' * `inner_join_()` - Keep only rows with matches in both x and y

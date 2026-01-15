@@ -66,15 +66,13 @@ Functions for creating new columns or modifying existing columns in a data
 frame. These are SciViews::R versions of tidyverse functions with standard
 evaluation and formula-based non-standard evaluation (ending with underscore
 \verb{_}). They work with data.frame, data.table, and tibbles.
-}
-\section{Functions}{
 
+\strong{Functions:}
 \itemize{
 \item \code{mutate_()} - Add new columns or modify existing ones
 \item \code{transmute_()} - Create new columns and drop all others
 }
 }
-
 \examples{
 library(svTidy)
 data(mtcars)

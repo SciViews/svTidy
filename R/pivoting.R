@@ -7,7 +7,7 @@
 #' evaluation and formula-based non-standard evaluation (ending with underscore
 #' `_`). They work with data.frame, data.table, and tibbles.
 #'
-#' @section Functions:
+#' **Functions:**
 #' * `pivot_longer_()` - Convert data from wide to long format
 #' * `pivot_wider_()` - Convert data from long to wide format
 #'

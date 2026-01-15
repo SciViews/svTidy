@@ -35,6 +35,12 @@ A data frame of the same type as the first one provided in \code{...}.
 Functions for binding data frames by rows or columns.
 These are SciViews::R versions with standard evaluation
 and formula-based non-standard evaluation (ending with underscore \verb{_}).
+
+#' \strong{Functions:}
+\itemize{
+\item \code{bind_rows_()} - Stack two or more data frames one on top of the other
+\item \code{bind_cols_()} - Stack two or more data frames side by side
+}
 }
 \seealso{
 \code{\link[dplyr:bind_rows]{dplyr::bind_rows()}}, \code{\link[dplyr:bind_cols]{dplyr::bind_cols()}}

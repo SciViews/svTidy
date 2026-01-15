@@ -60,9 +60,8 @@ Functions for selecting, renaming, and extracting columns from a data frame.
 These are SciViews::R versions of tidyverse functions with standard
 evaluation and formula-based non-standard evaluation (ending with underscore
 \verb{_}). They work with data.frame, data.table, and tibbles.
-}
-\section{Functions}{
 
+\strong{Functions:}
 \itemize{
 \item \code{select_()} - Select columns by name, position, or using tidy-select
 helpers
@@ -72,7 +71,6 @@ helpers
 \item \code{all_of()} - Helper for selecting all specified columns (errors if missing)
 }
 }
-
 \examples{
 library(svTidy)
 data(mtcars)

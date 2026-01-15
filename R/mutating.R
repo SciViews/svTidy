@@ -6,7 +6,7 @@
 #' evaluation and formula-based non-standard evaluation (ending with underscore
 #' `_`). They work with data.frame, data.table, and tibbles.
 #'
-#' @section Functions:
+#' **Functions:**
 #' * `mutate_()` - Add new columns or modify existing ones
 #' * `transmute_()` - Create new columns and drop all others
 #'

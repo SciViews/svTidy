@@ -4,6 +4,10 @@
 #' These are SciViews::R versions with standard evaluation
 #' and formula-based non-standard evaluation (ending with underscore `_`).
 #'
+#' #' **Functions:**
+#' * `bind_rows_()` - Stack two or more data frames one on top of the other
+#' * `bind_cols_()` - Stack two or more data frames side by side
+#'
 #' @export
 #' @rdname binding
 #' @param ... Data frames to bind.

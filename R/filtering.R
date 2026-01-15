@@ -7,7 +7,7 @@
 #' evaluation and formula-based non-standard evaluation (ending with underscore
 #' `_`). They work with data.frame, data.table, and tibbles.
 #'
-#' @section Functions:
+#' **Functions:**
 #' * `filter_()` - Keep rows that match conditions
 #' * `distinct_()` - Keep only unique/distinct rows based on columns
 #' * `slice_()` - Select rows by position (index)

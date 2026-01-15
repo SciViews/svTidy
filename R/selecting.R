@@ -7,7 +7,7 @@
 #' evaluation and formula-based non-standard evaluation (ending with underscore
 #' `_`). They work with data.frame, data.table, and tibbles.
 #'
-#' @section Functions:
+#' **Functions:**
 #' * `select_()` - Select columns by name, position, or using tidy-select
 #'   helpers
 #' * `pull_()` - Extract a single column as a vector
@@ -150,7 +150,7 @@ select_ <- structure(function(.data = (.), ...) {
 
   # If no selection is provided
   if (missing(...)) # Return a data frame with zero columns
-    return(.data[0L, , drop = FALSE])
+    return(.data[, 0L, drop = FALSE])
 
   # Process dots to args
   args <- formula_select(..., .fast.allowed.funs = c(":", "-", "c", "("))

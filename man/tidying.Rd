@@ -113,9 +113,8 @@ Functions for tidying data by separating, uniting, filling, and handling missing
 These are SciViews::R versions of tidyverse functions with standard
 evaluation and formula-based non-standard evaluation (ending with underscore
 \verb{_}). They work with data.frame, data.table, and tibbles.
-}
-\section{Functions}{
 
+\strong{Functions:}
 \itemize{
 \item \code{separate_()} - Separate one column into multiple columns by splitting on a separator
 \item \code{unite_()} - Unite multiple columns into one by pasting strings together
@@ -125,7 +124,6 @@ evaluation and formula-based non-standard evaluation (ending with underscore
 \item \code{uncount_()} - Duplicate rows according to a weighting variable
 }
 }
-
 \examples{
 library(svTidy)
 
