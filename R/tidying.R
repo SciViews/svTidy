@@ -471,6 +471,9 @@ fill_ <- structure(function(.data = (.), ..., .direction = "down") {
   if (missing(...)) # No variable to fill
     return(.data)
 
+  if (nrow(.data) == 0L) # Empty data frame
+    return(.data)
+
   args <- formula_select(..., .fast.allowed.funs = "")
   if (!args$fastselect) {# Use tidyselect
     eval_select2 <- function(..., data)
