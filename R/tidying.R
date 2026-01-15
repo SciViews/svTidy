@@ -414,11 +414,7 @@ unite_ <- structure(function(.data = (.), col, ..., sep = "_", remove = TRUE,
     col_data <- gsub(paste0(sep, "@@@@@"), "", col_data, fixed = TRUE)
     col_data <- sub(paste0("^", "@@@@@", sep, "?"), "", col_data, perl = TRUE)
   } else if (isFALSE(na.rm)) {
-    if (inherits(.data, "data.table")) {
-      col_data <- do.call(paste, c(.data[, ..cols], list(sep = sep)))
-    } else {
-      col_data <- do.call(paste, c(.data[, cols], list(sep = sep)))
-    }
+    col_data <- do.call(paste, c(qDF(.data)[, cols], list(sep = sep)))
   } else {
     stop("{.arg na.rm} must be {.code TRUE} or {.code FALSE}, not {.obj_type_friendly {na.rm}} ({.val {na.rm}}).")
   }
@@ -440,7 +436,7 @@ unite_ <- structure(function(.data = (.), col, ..., sep = "_", remove = TRUE,
 
   if (isTRUE(remove)) {
     if (inherits(.data, "data.table")) {
-      res <- res[, .SD, .SDcols = -(cols + 1)] # Remove columns (data.table version)
+      res <- qDT(qDF(res)[, -(cols + 1), drop = FALSE]) # data.table version
     } else {
       res <- res[, -(cols + 1), drop = FALSE] # Remove columns (data frames)
     }
