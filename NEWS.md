@@ -1,3 +1,7 @@
+# svTidy 0.2.1
+
+*   More tests.
+
 # svTidy 0.2.0
 
 *   Refactoring of the man pages (and splitting of SciViews functions into separate script files).
