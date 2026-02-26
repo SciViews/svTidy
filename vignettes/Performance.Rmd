@@ -1,0 +1,98 @@
+---
+title: "Performance of svTidy Functions"
+author: "Philippe Grosjean"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+    fig_caption: yes
+vignette: >
+  %\VignetteIndexEntry{Performance of svTidy Functions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(dplyr)
+library(tidyr)
+library(data.table)
+library(collapse)
+library(svTidy)
+```
+
+> One goal of the {svTidy} package is to provide an interface that is similar to {dplyr} and {tidyr} to fast code, possibly using the {data.table} or {collapse} packages under the hood.
+
+In this document, we compare speed and memory use of {svTidy} with {dplyr} and {tidyr}. Note: this document is a work in progress and is lacking many important parts in its present state.
+
+```{r}
+data.table::setDTthreads(percent = 75)
+(.nthreads <- data.table::getDTthreads())
+options(collapse_nthreads = .nthreads)
+options(collapse_na.rm = FALSE)
+options(collapse_mask = "all")
+#SciViews::R
+#iris |>
+#  sgroup_by(Species) |>
+#  ssummarise(n = n(), mean = fmean(Sepal.Length))
+
+```
+
+```{r}
+data(mtcars)
+#mtcars_ <- svBase::as_dtrm(mtcars)
+#mtcars <- tibble::as_tibble(mtcars_)
+bench::mark(check = FALSE,
+  dplyr     = arrange(mtcars, cyl, desc(vs)),
+  svTidySE  = arrange_(mtcars, 'cyl', '-vs'),
+  svTidyNSE = arrange_(mtcars, ~cyl, ~ -vs))
+```
+
+```{r}
+data(babynames, package = 'babynames')
+bench::mark(check = FALSE,
+  dplyr     = arrange(babynames, sex, desc(n)),
+  svTidySE  = arrange_(babynames, 'sex', '-n'),
+  svTidyNSE = arrange_(babynames, ~sex, ~ -n))
+```
+
+```{r}
+df1 <- data.frame(x = 1:2, y = letters[1:2])
+bench::mark(check = FALSE,
+  dplyr       = bind_rows(df1, df1),
+  svTidy      = bind_rows_(df1, df1),
+  svTidy2     = bind_rows_(list(df1, df1)),
+  data.table  = rbindlist(list(df1, df1)),
+  base        = rbind(df1, df1))
+```
+
+```{r}
+data(babynames, package = 'babynames')
+bench::mark(check = FALSE,
+  dplyr      = bind_rows(babynames, babynames),
+  svTidy     = bind_rows_(babynames, babynames),
+  svTidy2    = bind_rows_(list(babynames, babynames)),
+  data.table = rbindlist(list(babynames, babynames)),
+  base       = rbind(babynames, babynames))
+```
+
+```{r}
+df1 <- data.frame(x = 1:2, y = letters[1:2])
+df2 <- data.frame(z = 10:11, w = factor(5:6))
+bench::mark(check = FALSE,
+  dplyr      = bind_cols(df1, df2),
+  svTidy     = bind_cols_(df1, df2),
+  data.table = cbind(df1, df2),
+  base       = cbind(df1, df2))
+```
+
+```{r}
+data(babynames, package = 'babynames')
+bench::mark(check = FALSE,
+  dplyr      = bind_cols(babynames, babynames),
+  svTidy     = bind_cols_(babynames, babynames),
+  data.table = rbind(babynames, babynames),
+  base       = rbind(babynames, babynames))
+```
+

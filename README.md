@@ -36,10 +36,11 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(svTidy)
-#> Registered S3 method overwritten by 'svTidy':
-#>   method           from  
-#>   print.grouped_df svBase
-## basic example code
+#> Registered S3 methods overwritten by 'svMisc':
+#>   method        from  
+#>   print.section svBase
+#>   str.section   svBase
+## basic example code (todo)
 ```
 
 For further instructions, please, refer to the help pages at

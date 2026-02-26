@@ -15,33 +15,320 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(dplyr) # Must be loaded before svTidy to avoid conflicts with _ functions!
 library(svTidy)
 ```
 
-> The {svTidy} package provides a set of functions to manipulate data frames in a tidy way (like {dplyr} and {tidyr}), but faster and by evaluating its arguments in a standard way, or by mean of formulas for data-masking and tidyselect.
+> The {svTidy} package provides a set of functions to manipulate data frames in a tidy way (like {dplyr} and {tidyr} do), but by evaluating its arguments in a standard way, or by mean of formulas instead of data masking or tidy selection. This has several advantages over the Tidyverse equivalent functions and we will develop some of them here.
+
+Before we present the formula masking mechanism of {svTidy}, we will first explain what are **non-standard evaluation** and **data masking**, and why they can be a problem in some cases because they are not **referentially transparent**. Then, we will show how formula masking works and how it can solve these problems. If you are familiar with these concepts, you can jump directly to the section "Formula masking".
+
+## Non-standard evaluation
+
+In R, when you call a function, the provided arguments are evaluated in the calling environment by default. Here is a simple example:
+
+```{r}
+x <- c(1, 3, 8)
+log(x)
+```
+
+Thus, in `log(x)`, `x` is first evaluated in the global environment where the code is run. It resolves to a numerical vector containing three numbers: `1`, `3`, and `8`. Then, the logarithm of that numerical vector is computed. Now, when the numbers are not directly in a vector, but they are in a data frame, say `df`, we must indicate that we want to use the column named `x` from it by `df$x` or `df[['x']]`. However, since `df$x` does not evaluate in a standard way, we will use the second form:
+
+```{r}
+df <- data.frame(x = c(1, 3, 8), y = rep(FALSE, 3))
+rm(x) # To make sure we do not use the old `x` vector
+log(df[['x']])
+```
+
+This is quite simple and understandable R code. However, in some cases, you have to repeat several times the name of the data frame, which can be quite tedious. For instance, if you want to filter the rows of `df` where the value of `x` is greater than `2`, you can write in base R:
+
+```{r}
+df[df[['x']] > 2, ]
+```
+
+Note that `df` is repeated twice here. Not a big deal, but it is annoying enough for some that they prefer an alternate approach where the first argument of the function is the `data=` argument, indicating only once which data frame is used. Subsequent arguments refer by default to variables in that data frame, and if not found, are looked in the search path, starting from the environment where the code is executed. `dplyr::filter()` is such a function. The following code does roughly the same operation on `df` than above, but without repeating the name of the data frame:
+
+```{r}
+filter(df, x > 2)
+```
+
+Arguably, this form is simpler and easier to read. But in this case, the second argument `x > 2` **cannot be evaluated in a standard way**, because we do not refer to `x` in the calling environment, but to `x` as a column of `df`. Fortunately, R allows to manipulate arguments in a non-standard way *before* they are evaluated. The mechanism that provides the magic for `dplyr::filter()` to work like this is called [**data masking**](https://rlang.r-lib.org/reference/topic-data-mask.html).
+
+> In the Tidyverse, non-standard evaluation is used to get more concise code, closer to English grammar. The focus is on interactive data analysis.
+
+Well OK, that's nice... so, what is the problem? The "[Programming with dplyr](https://dplyr.tidyverse.org/articles/programming.html)" vignette (version 1.2.0) states:
+
+> "Data masking and tidy selection make interactive data exploration fast and fluid, but they add some new challenges when you attempt to use them indirectly such as in a for loop or a function."
+
+The problem is thus when the Tidyverse functions are used in a function or a for loop. A detailed explanation follows.
+
+### Referential transparency
+
+Code is qualified as [referentially transparent](https://en.wikipedia.org/wiki/Referential_transparency) when you can replace a part of the expression by another part that is equivalent. Standard evaluation of function arguments in R is referentially transparent. You can write this:
+
+```{r}
+y <- df[['x']] > 2
+df[y, ] # Functionally equivalent to `df[df[['x']] > 2, ]`
+```
+
+but with the data masking, it does not work (at least the way you expected it to work):
+
+```{r}
+y <- rlang::quo(x > 2) # Need quo() here to defer evaluation of the expression
+filter(df, y) # Error: object 'y' in not the one you meant!
+```
+
+Here, it is the `y` variable in `df` that is used, not the expression in `y` in the calling environment. The workaround is, indeed, more complicated: you have to **"inject"** the expression in `y` into the `filter()` call, using the `{{` operator:
+
+```{r}
+filter(df, {{ y }})
+```
+
+Another situation when data masking is hurting because its non-standard evaluation is when the code is called from a function and a part or the whole of a "data masked" argument becomes an argument of that function. In base R, you can write this:
+
+```{r}
+my_filter_base <- function(data, subset) {
+  data[subset, ]
+}
+my_filter_base(df, df[['x']] > 2)
+```
+
+Again, referential transparency and standard evaluation of the arguments help here to make everything smooth. `dplyr::filter()` does not allow to do this:
+
+```{r, error=TRUE}
+my_filter_dplyr <- function(data, subset) {
+  filter(data, subset)
+}
+my_filter_dplyr(df, x > 2)
+```
+
+Again, not the result you expected. You have to do an **"injection"** (or **"quasiquotation"**) and it uses the **embracing operator** `{{` to indicate we want to inject an expression inside another one before its evaluation.
+
+```{r}
+my_filter_dplyr2 <- function(data, subset) {
+  filter(data, {{ subset }})
+}
+my_filter_dplyr2(df, x > 2)
+```
+
+As nice as this "injection" mechanism may look like, you will be bitten one day by it (because our brain tends to think in a referentially transparent way, which it is not)!
+
+## Formula masking
+
+In {svTidy} we introduce an alternate non-standard mechanism called **formula masking**. It is based on the use of R formulas to indicate that an argument should be evaluated in a non-standard way. For instance, the equivalent of `filter(df, x > 2)` in {svTidy} is:
+
+```{r}
+filter_(df, ~x > 2)
+```
+
+First note that {svTidy} functions equivalent to {dplyr} or {tidyr} ones have an underscore at the end of their name (`filter_()` *vs* `filter()`, or `mutate_()` *vs*. `mutate()`, etc.) In older versions of {dplyr} and {tidyr}, the functions with an underscore at the end were the standard evaluation version of the functions without underscore. They are now defunct in {dplyr} version \>= 1.2.0. Since the {svTidy} function **can also evaluated their arguments in a standard way**, we keep this convention:
+
+```{r}
+filter_(df, df[['x']] > 2) # Standard evaluation of the arguments, alternate form
+```
+
+So, `svTidy::filter_()` allows both standard and non-standard evaluation of its arguments in the *same function*. Non-standard evaluation is signaled by using a **formula**, which is created in R thanks to the `~` operator. This way, when you read code you can immediately spot the non-standard evaluated arguments, thanks to the presence of that `~` operator. Also, notice that you can easily convert {dplyr} code into {svTidy} one: add an underscore at the end of the function name, and place a tilde in front of non-standard evaluated arguments... and it will be good most of the time.
+
+OK, but how is this better that data masking? Well, it is *somehow* referentially transparent. So, you can write this:
+
+```{r}
+y <- ~x > 2 # Note that you do not need quo() here: ~ already captures the expression
+filter_(df, y)
+```
+
+Here, `y` is not a formula and is thus evaluated in a standard way. It resolves to `~x > 2`, which is a formula. Thus, `filter_()` evaluates it in a non-standard way, looking for `x` in `df`, as we are expecting, since we provided that context as first argument of `filter_()`. **We thus have both the advantages of non-standard evaluation of the argument (no repetition of `df`) and the advantages of standard evaluation (referential transparency).**
+
+Note that the formula is not new in R indeed. It is used in functions like `stats::t.test()` or `stats::lm()` for instance. So, we do not introduce a new mechanism. We reuse one that already exists since a long time in the R language. However, in {svTidy} the formula is handled in a way that makes it as much similar to the Tidyverse as possible.
+
+## Further advantages of formula masking
+
+Before we compare a more complex example, we have to introduce two other features of {svTidy} functions: **computed argument names** and the **data-dot mechanism**. We have also to replace the pipeline by a **bullet-list construct**.
+
+### Computed argument name
+
+There is another situation that is difficult to resolve with the Tidyverse functions. It is when the argument name is the name of a variable we create, say, with `mutate()`. A simple examples:
+
+```{r}
+mutate(df, x2 = x^2)
+```
+
+The problem occurs when we want to compute the name of the new variable `x2`. In {dplyr}, you have to use `{{}}` (but here, it is using a different mechanism provided by the `glue()` function) and the `:=` operator instead of the `=` operator.
+
+```{r}
+my_mutate_dplyr <- function(data, var, expr) {
+  mutate(data, "{{var}}" := {{ expr }})
+}
+my_mutate_dplyr(df, x2, x^2)
+```
+
+With {svTidy}, we have used single-sided formulas until now (the tilde `~` is on the left of the expression), but we can also use two-sided formulas, where the tilde is in the middle, like in `'varname' ~ expr`. This allows to compute the name of the new variable in a more straightforward way:
+
+```{r}
+my_mutate_svTidy <- function(data, expr) {
+  mutate_(data, expr)
+}
+my_mutate_svTidy(df, 'x2' ~ x^2)
+```
+
+If you want to separate the two terms of the formula as two different arguments, you can do it, but then you have to evaluate both arguments in a standard way (unless you process them in a special way using **macro expansion** that we will see here under):
+
+```{r}
+my_mutate_svTidy2 <- function(data, name, expr) {
+  mutate_(data, name ~ expr)
+}
+my_mutate_svTidy2(df, 'x2', df$x^2)
+```
+
+Finally, if you need to replace one or more variables in formulas, the same way injection does for Tidyverse, you must activate the **"macro expansion"** mechanism of {svTidy} by setting `. __macros__. <- TRUE` at the beginning of the body of your function. Then, all variables in a formula that point to other formulas will be replaced in the initial expression before it is evaluated:
+
+```{r}
+my_mutate_svTidy3 <- function(data, name, var) {
+  .__macros__. <- TRUE
+  mutate_(data, name ~ var^2)
+}
+my_mutate_svTidy3(df, 'x2', ~x)
+```
+
+### Data-dot mechanism and bullet-list construct
+
+The Tidyverse uses the pipeline operator `|>` (or `%>%` from {magrittr}) to chain together several operations on a data frame. This seems nice and reads well, but it glues together several expression into a giant one that is much less easy to debug. The pipe operator `|>` is nice to make R code more readable when an instruction is made of several functions nested into each other. But we believe that chaining several separate operations using the same pipe operator `|>` is overusing it. As an alternative, equally readable, we propose to use a pseudo-operator `.=` that we call a **"bullet-list"** operator. The idea is to present successive operations related together a little bit as a bullet list. An example will be more clear than a long explanation. In the Tidyverse, you would write something like this (using both data masking and tidy selection):
+
+```{r}
+data(starwars)
+
+# A Tidyverse pipeline using five of the main {dplyr} verbs
+starwars_sum <-
+  starwars |>
+  filter(species == "Human") |>
+  select(name:homeworld) |>
+  # Note: get age 2 years after battle of Yavin (birth_year is year born Before Battle of Yavin)
+  mutate(age = 2 + birth_year) |>
+  group_by(gender) |>
+  summarise(
+    mean_age  = mean(age, na.rm = TRUE),
+    sd_age    = sd(age, na.rm = TRUE),
+    n_age     = sum(!is.na(age)),
+    mean_mass = mean(mass, na.rm = TRUE),
+    sd_mass   = sd(mass, na.rm = TRUE),
+    n_mass    = sum(!is.na(mass))
+  )
+starwars_sum
+```
+
+`filter()`, `mutate()` and `summarise()` use data masking. `select()` and `group_by()` use tidy selection. There is no clue in the code of that. You have to look at the documentation, and this is mandatory to understand what this code does. Yet, this reduces the typing by avoiding quotes around variable names, and by avoiding to repeat `df$var`. It is possible to rewrite this code with {svTidy} the way we learned, by just appending underscore to the function name and prepending a tilde to non-standard evaluated arguments. But we can also replace the pipe operator by the bullet-list operator this way:
+
+```{r}
+starwars_sum2 <- {
+  .= starwars
+  .= filter_(~species == "Human")
+  .= select_(~name:homeworld)
+  .= mutate_(age = ~2 + birth_year)
+  .= group_by_(~gender)
+  .= summarise_(
+    mean_age  = ~mean(age, na.rm = TRUE),
+    sd_age    = ~sd(age, na.rm = TRUE),
+    n_age     = ~sum(!is.na(age)),
+    mean_mass = ~mean(mass, na.rm = TRUE),
+    sd_mass   = ~sd(mass, na.rm = TRUE),
+    n_mass    = ~sum(!is.na(mass))
+  )
+}
+starwars_sum2
+identical(starwars_sum, starwars_sum2)
+```
+
+The '{' operator groups together **several separate expressions** that can be debugged more easily. We believe that the `.=` at the beginning of each line makes it even clearer that we have successive operations than when using the pipe `|>` at the end of the line (compare both codes). However, there is something special here. `.=` is a pseudo-operator because it does nothing special. It is `.` followed by `=` meaning we assign to dot `.` the right-side of the expression after `=`. However, we do no specify the `data=` argument in the {svTidy} functions. We should have to write `.= filter_(., ~species == "Human")` for instance... but we dropped `.` here. This is because the {svTidy} function use an additional mechanism called **"data-dot"**. When the `data=` argument is not provided, the default `.` is inserted in the call of the function before it is executed. This allows to get code closer to the Tidyverse one, with just three changes: (1) replace the pipe `|>` at the end by a bullet-list `.=` at the beginning of a line, (2) add an underscore after the name of the functions, and (3) add a tilde before non-standard arguments (and, optionally, group together the successive operations with '{}').
+
+Now, if we want to reuse this code in a function with various argument, things become much more complicated with the Tidyverse, because of the required injections and special constructs for names of variables, as briefly explained at the beginning of this vignette (it is more detailed in "[Programming with dplyr](https://dplyr.tidyverse.org/articles/programming.html)").
+
+```{r}
+my_summarise_dplyr <- function(data, subset, selection, group, year, var, var2) {
+  var2_sym <- as.symbol(var2) # Must provide a symbol for names!
+  data |>
+    filter({{ subset }}) |>
+    select({{ selection }}) |>
+    mutate({{var}} := .env$year + .data$birth_year) |>
+    group_by({{ group }}) |>
+    summarise(
+      "mean_{{var}}"      := mean({{ var }}, na.rm = TRUE),
+      "sd_{{var}}"        := sd({{ var }}, na.rm = TRUE),
+      "n_{{var}}"         := sum(!is.na({{ var }})),
+      "mean_{{var2_sym}}" := mean(.data[[var2]], na.rm = TRUE),
+      "sd_{{var2_sym}}"   := sd(.data[[var2]], na.rm = TRUE),
+      "n_{{var2_sym}}"    := sum(!is.na(.data[[var2]]))
+    )
+}
+starwars_sum3 <- my_summarise_dplyr(starwars, subset = species == "Human",
+  selection = name:homeworld, group = gender, year = 2, var = age, var2 = 'mass')
+starwars_sum3
+identical(starwars_sum, starwars_sum3)
+```
+
+Note that `var=` and `var2=` illustrate the two ways of defining a variable, by a symbol for `var=` and by its name for `var2=` (character string). In the case of `var2=`, it cannot be used as such in the name substitution. It must be converted into a symbol first (in `var_sym`). The way they are dealt with by the Tidyverse functions differ, as you can see. Now, here is the {svTidy} version:
+
+```{r}
+my_summarise_svTidy <- function(data, subset, selection, group, year, var, var2) {
+  .__macros__. <- TRUE
+  fvar2 <- svBase::f_(var2)
+  .= data
+  .= filter_(subset)
+  .= select_(selection)
+  .= mutate_(var ~ year + birth_year)
+  .= group_by_(group)
+  .= summarise_(
+    'mean_{{var}}'  ~ mean(var, na.rm = TRUE),
+    'sd_{{var}}'    ~ sd(var, na.rm = TRUE),
+    'n_{{var}}'     ~ sum(!is.na(var)),
+    'mean_{{var2}}' ~ mean(fvar2, na.rm = TRUE),
+    'sd_{{var2}}'   ~ sd(fvar2, na.rm = TRUE),
+    'n_{{var2}}'    ~ sum(!is.na(fvar2))
+  )
+}
+starwars_sum3 <- my_summarise_svTidy(starwars, subset = ~species == "Human",
+  selection = ~name:homeworld, group = ~gender, year = 2, var = ~age, var2 = 'mass')
+starwars_sum3
+identical(starwars_sum, starwars_sum3)
+```
+
+You notice that this last code is leaner than the Tidyverse version and it is also much closer to the initial bullet-point version. First line `var <- {` was replaced by the function definition `fun <- function(args) {`. `.__macros__. <- TRUE` is added in the body of the function only if it is required (here for `summarise_()`.) Then, you simply replace the expressions by the arguments names like you do in plain R code (replace `starwars` by `data`, `~species == "Human"` inside `filter_()` by `subset`, etc.) Finally, since macro expansion only work for variables that contain formulas, and `var2` is a character string, we have to convert it into a formula before use. The function `svBase::f_()` does this in a simple way. In practice, you should prefer to directly use a formula for such arguments, like `var=`.
+
+### Performance comparison
+
+```{r}
+bm <- bench::mark(
+  dplyr = my_summarise_dplyr(starwars, subset = species == "Human",
+  selection = name:homeworld, group = gender, year = 2, var = age, var2 = 'mass'),
+  svTidy = my_summarise_svTidy(starwars, subset = ~species == "Human",
+  selection = ~name:homeworld, group = ~gender, year = 2, var = ~age, var2 = 'mass')
+)
+bm
+```
+
+In such a small dataset, we essentially measure the overhead of the two approaches, and we can see that {svTidy} is `r round(as.numeric(bm$median[1] / bm$median[2]), 1)` times faster, and it requires `r round(as.numeric(bm$mem_alloc[1] / bm$mem_alloc[2]), 1)` times less memory than {dplyr} in this case. With larger datasets, the overhead becomes negligible, and results will be different. However, for code to be incorporated in functions that can possibly be run a large number of times (for instance in loops), this may be important.
 
 ## How to convert tidyverse code?
 
-You have only a few rules to remember to convert Tidyverse code using {dplyr} and/or {tidyr} into {svTidy} code:
+If you are convinced, you will probably have to convert existing or future {dplyr}/{tidyr} code into {svTidy}. You have only a few rules to remember to do so:
 
-- append '_' at the end of the function name (ex.: `select()` -> `select_()`), and make sure that {svTidy} is loaded higher in the search path than {dplyr} and {tidyr}.
+-   append '\_' at the end of the function name (ex.: `select()` -\> `select_()`), and make sure that {svTidy} is loaded higher in the search path than {dplyr} and {tidyr}, if the later packages are loaded too.
 
-- either:
-    * Convert the arguments into standard evaluation -SE- (name of variables between quotes and `df$var` instead of `var` for a column named "var" in a data frame `df`), or
-    * Use formulas for non-standard evaluation -NSE-: use a tilde `~` in front of your NSE code and *do not* quote variable names. You can keep  `~var`instead of `df$var`.
+-   either:
 
-- Use "fast" collapse functions instead of base equivalent (for instance, `fmean()`instead of `mean()`). In fact, you can continue to use base function, but you will not benefit from the speed increase of the fast functions, especially if your code involves grouped data.
+    -   Convert the arguments into standard evaluation -SE- (name of variables between quotes and `df$var` instead of `var` for a column named "var" in a data frame `df`), or
+    -   Use formulas for non-standard evaluation -NSE-: use a tilde `~` in front of your NSE code and *do not* quote variable names. You can keep `~var`instead of `df$var`.
 
-- The '_' function automatically ungroup the data at the enc, on the contrary to their Tidyverse equivalent [note: not true for all functions for now, check your results].
+-   Use "fast" collapse functions instead of base equivalent (for instance, `fmean()` instead of `mean()`). In fact, you can continue to use base function, but you will not benefit from the speed increase of the fast functions, especially if your code involves grouped data. Of course, also load the {collapse} package using `library(collapse)` before use.
 
-- You benefit from referential transparency in SE mode: if `x <- 'var'`, you can use `x` instead of `'var'` everywhere. You do not need to "embrace" the argument, like this `{{ x }}` (only required in Tidyverse functions). Idem for formulas: write `x <- ~var`, and you can use `x` everywhere instead of `~var`.
+-   The '\_' function automatically ungroups the data at the end, on the contrary to their Tidyverse equivalent [note: not true for all functions for now, check your results].
 
-- To rename variables, you replace the (ugly) Tidyverse syntax `{{varname}} := expr` by a two-sided formula: `varname ~ expr`.
+-   You benefit from referential transparency in SE mode: if `x <- 'var'`, you can use `x` instead of `'var'` everywhere. You do not need to "embrace" the argument, like this `{{ x }}` (only required in Tidyverse functions). Idem for formulas: write `x <- ~var`, and you can use `x` everywhere instead of `~var`.
 
-- If a function accepts both a data frame or a vector as first argument (e.g., `replace_na_()`, you must write `v = vector` if you provide a vector, to mark your intention to use it with something else than a data frame.
+-   To rename variables, you replace the Tidyverse syntax `{{varname}} := expr` by a two-sided formula: `varname ~ expr`.
 
-- The '_' functions are "data-dot". It means they inject `.` as first argument (usually `.data=` if no data frame is provided.
+-   If a function accepts both a data frame or a vector as first argument (e.g., `replace_na_()`, you must write `v = vector` if you provide a vector, to mark your intention to use it with something else than a data frame.
 
-- You cannot mix SE code and NSE code through formulas. Either use SE code for all arguments, or formulas only.
+-   The '\_' functions are "data-dot". It means they inject `.` as first argument (usually `.data=` if no data frame is provided).
 
-- Formulas are converted into expressions that are evaluated in the environment where the first provided formula was created. If you need an evaluation in a different environment, you can use `retarget(formula)` to change its environment.
+-   You cannot mix SE code and NSE code through formulas. Either use SE code for all arguments, or formulas only, inside a function call.
+
+-   Formulas are converted into expressions that are evaluated in the environment where the first provided formula was created. If you need an evaluation in a different environment, you can use `retarget(formula)` to change its environment.
