@@ -40,7 +40,7 @@ library(svTidy)
 #>   method        from  
 #>   print.section svBase
 #>   str.section   svBase
-## basic example code (todo)
+## basic example code (todo..)
 ```
 
 For further instructions, please, refer to the help pages at
