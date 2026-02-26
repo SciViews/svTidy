@@ -75,6 +75,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="../articles/Performance.html">Performance of svTidy Functions</a>
+    </li>
+  </ul>
+</li>
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
@@ -106,7 +118,7 @@
                         <h4 data-toc-skip class="author">Philippe
 Grosjean</h4>
             
-            <h4 data-toc-skip class="date">2026-01-21</h4>
+            <h4 data-toc-skip class="date">2026-02-26</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/SciViews/svTidy/blob/main/vignettes/svTidy.Rmd" class="external-link"><code>vignettes/svTidy.Rmd</code></a></small>
       <div class="hidden name"><code>svTidy.Rmd</code></div>
@@ -117,20 +129,518 @@ Grosjean</h4>
     
 <blockquote>
 <p>The {svTidy} package provides a set of functions to manipulate data
-frames in a tidy way (like {dplyr} and {tidyr}), but faster and by
-evaluating its arguments in a standard way, or by mean of formulas for
-data-masking and tidyselect.</p>
+frames in a tidy way (like {dplyr} and {tidyr} do), but by evaluating
+its arguments in a standard way, or by mean of formulas instead of data
+masking or tidy selection. This has several advantages over the
+Tidyverse equivalent functions and we will develop some of them
+here.</p>
 </blockquote>
+<p>Before we present the formula masking mechanism of {svTidy}, we will
+first explain what are <strong>non-standard evaluation</strong> and
+<strong>data masking</strong>, and why they can be a problem in some
+cases because they are not <strong>referentially transparent</strong>.
+Then, we will show how formula masking works and how it can solve these
+problems. If you are familiar with these concepts, you can jump directly
+to the section “Formula masking”.</p>
+<div class="section level2">
+<h2 id="non-standard-evaluation">Non-standard evaluation<a class="anchor" aria-label="anchor" href="#non-standard-evaluation"></a>
+</h2>
+<p>In R, when you call a function, the provided arguments are evaluated
+in the calling environment by default. Here is a simple example:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">8</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.000000 1.098612 2.079442</span></span></code></pre></div>
+<p>Thus, in <code>log(x)</code>, <code>x</code> is first evaluated in
+the global environment where the code is run. It resolves to a numerical
+vector containing three numbers: <code>1</code>, <code>3</code>, and
+<code>8</code>. Then, the logarithm of that numerical vector is
+computed. Now, when the numbers are not directly in a vector, but they
+are in a data frame, say <code>df</code>, we must indicate that we want
+to use the column named <code>x</code> from it by <code>df$x</code> or
+<code>df[['x']]</code>. However, since <code>df$x</code> does not
+evaluate in a standard way, we will use the second form:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">8</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="co"># To make sure we do not use the old `x` vector</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">df</span><span class="op">[[</span><span class="st">'x'</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.000000 1.098612 2.079442</span></span></code></pre></div>
+<p>This is quite simple and understandable R code. However, in some
+cases, you have to repeat several times the name of the data frame,
+which can be quite tedious. For instance, if you want to filter the rows
+of <code>df</code> where the value of <code>x</code> is greater than
+<code>2</code>, you can write in base R:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df</span><span class="op">[</span><span class="va">df</span><span class="op">[[</span><span class="st">'x'</span><span class="op">]</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">2</span>, <span class="op">]</span></span>
+<span><span class="co">#&gt;   x     y</span></span>
+<span><span class="co">#&gt; 2 3 FALSE</span></span>
+<span><span class="co">#&gt; 3 8 FALSE</span></span></code></pre></div>
+<p>Note that <code>df</code> is repeated twice here. Not a big deal, but
+it is annoying enough for some that they prefer an alternate approach
+where the first argument of the function is the <code>data=</code>
+argument, indicating only once which data frame is used. Subsequent
+arguments refer by default to variables in that data frame, and if not
+found, are looked in the search path, starting from the environment
+where the code is executed. <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter()</a></code> is such a
+function. The following code does roughly the same operation on
+<code>df</code> than above, but without repeating the name of the data
+frame:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">x</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x     y</span></span>
+<span><span class="co">#&gt; 1 3 FALSE</span></span>
+<span><span class="co">#&gt; 2 8 FALSE</span></span></code></pre></div>
+<p>Arguably, this form is simpler and easier to read. But in this case,
+the second argument <code>x &gt; 2</code> <strong>cannot be evaluated in
+a standard way</strong>, because we do not refer to <code>x</code> in
+the calling environment, but to <code>x</code> as a column of
+<code>df</code>. Fortunately, R allows to manipulate arguments in a
+non-standard way <em>before</em> they are evaluated. The mechanism that
+provides the magic for <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter()</a></code> to work like this is
+called <a href="https://rlang.r-lib.org/reference/topic-data-mask.html" class="external-link"><strong>data
+masking</strong></a>.</p>
+<blockquote>
+<p>In the Tidyverse, non-standard evaluation is used to get more concise
+code, closer to English grammar. The focus is on interactive data
+analysis.</p>
+</blockquote>
+<p>Well OK, that’s nice… so, what is the problem? The “<a href="https://dplyr.tidyverse.org/articles/programming.html" class="external-link">Programming
+with dplyr</a>” vignette (version 1.2.0) states:</p>
+<blockquote>
+<p>“Data masking and tidy selection make interactive data exploration
+fast and fluid, but they add some new challenges when you attempt to use
+them indirectly such as in a for loop or a function.”</p>
+</blockquote>
+<p>The problem is thus when the Tidyverse functions are used in a
+function or a for loop. A detailed explanation follows.</p>
+<div class="section level3">
+<h3 id="referential-transparency">Referential transparency<a class="anchor" aria-label="anchor" href="#referential-transparency"></a>
+</h3>
+<p>Code is qualified as <a href="https://en.wikipedia.org/wiki/Referential_transparency" class="external-link">referentially
+transparent</a> when you can replace a part of the expression by another
+part that is equivalent. Standard evaluation of function arguments in R
+is referentially transparent. You can write this:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">[[</span><span class="st">'x'</span><span class="op">]</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">2</span></span>
+<span><span class="va">df</span><span class="op">[</span><span class="va">y</span>, <span class="op">]</span> <span class="co"># Functionally equivalent to `df[df[['x']] &gt; 2, ]`</span></span>
+<span><span class="co">#&gt;   x     y</span></span>
+<span><span class="co">#&gt; 2 3 FALSE</span></span>
+<span><span class="co">#&gt; 3 8 FALSE</span></span></code></pre></div>
+<p>but with the data masking, it does not work (at least the way you
+expected it to work):</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/defusing-advanced.html" class="external-link">quo</a></span><span class="op">(</span><span class="va">x</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span> <span class="co"># Need quo() here to defer evaluation of the expression</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">y</span><span class="op">)</span> <span class="co"># Error: object 'y' in not the one you meant!</span></span>
+<span><span class="co">#&gt; [1] x y</span></span>
+<span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span></code></pre></div>
+<p>Here, it is the <code>y</code> variable in <code>df</code> that is
+used, not the expression in <code>y</code> in the calling environment.
+The workaround is, indeed, more complicated: you have to
+<strong>“inject”</strong> the expression in <code>y</code> into the
+<code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code> call, using the <code>{{</code> operator:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">df</span>, <span class="op">{</span><span class="op">{</span> <span class="va">y</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x     y</span></span>
+<span><span class="co">#&gt; 1 3 FALSE</span></span>
+<span><span class="co">#&gt; 2 8 FALSE</span></span></code></pre></div>
+<p>Another situation when data masking is hurting because its
+non-standard evaluation is when the code is called from a function and a
+part or the whole of a “data masked” argument becomes an argument of
+that function. In base R, you can write this:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">my_filter_base</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">data</span><span class="op">[</span><span class="va">subset</span>, <span class="op">]</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu">my_filter_base</span><span class="op">(</span><span class="va">df</span>, <span class="va">df</span><span class="op">[[</span><span class="st">'x'</span><span class="op">]</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x     y</span></span>
+<span><span class="co">#&gt; 2 3 FALSE</span></span>
+<span><span class="co">#&gt; 3 8 FALSE</span></span></code></pre></div>
+<p>Again, referential transparency and standard evaluation of the
+arguments help here to make everything smooth.
+<code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter()</a></code> does not allow to do this:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">my_filter_dplyr</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu">my_filter_dplyr</span><span class="op">(</span><span class="va">df</span>, <span class="va">x</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `filter()`:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> In argument: `subset`.</span></span>
+<span><span class="co">#&gt; <span style="font-weight: bold;">Caused by error:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> object 'x' not found</span></span></code></pre></div>
+<p>Again, not the result you expected. You have to do an
+<strong>“injection”</strong> (or <strong>“quasiquotation”</strong>) and
+it uses the <strong>embracing operator</strong> <code>{{</code> to
+indicate we want to inject an expression inside another one before its
+evaluation.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">my_filter_dplyr2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">data</span>, <span class="op">{</span><span class="op">{</span> <span class="va">subset</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu">my_filter_dplyr2</span><span class="op">(</span><span class="va">df</span>, <span class="va">x</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x     y</span></span>
+<span><span class="co">#&gt; 1 3 FALSE</span></span>
+<span><span class="co">#&gt; 2 8 FALSE</span></span></code></pre></div>
+<p>As nice as this “injection” mechanism may look like, you will be
+bitten one day by it (because our brain tends to think in a
+referentially transparent way, which it is not)!</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="formula-masking">Formula masking<a class="anchor" aria-label="anchor" href="#formula-masking"></a>
+</h2>
+<p>In {svTidy} we introduce an alternate non-standard mechanism called
+<strong>formula masking</strong>. It is based on the use of R formulas
+to indicate that an argument should be evaluated in a non-standard way.
+For instance, the equivalent of <code>filter(df, x &gt; 2)</code> in
+{svTidy} is:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/filtering.html">filter_</a></span><span class="op">(</span><span class="va">df</span>, <span class="op">~</span><span class="va">x</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x     y</span></span>
+<span><span class="co">#&gt; 1 3 FALSE</span></span>
+<span><span class="co">#&gt; 2 8 FALSE</span></span></code></pre></div>
+<p>First note that {svTidy} functions equivalent to {dplyr} or {tidyr}
+ones have an underscore at the end of their name (<code><a href="../reference/filtering.html">filter_()</a></code>
+<em>vs</em> <code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code>, or <code><a href="../reference/mutating.html">mutate_()</a></code>
+<em>vs</em>. <code>mutate()</code>, etc.) In older versions of {dplyr}
+and {tidyr}, the functions with an underscore at the end were the
+standard evaluation version of the functions without underscore. They
+are now defunct in {dplyr} version &gt;= 1.2.0. Since the {svTidy}
+function <strong>can also evaluated their arguments in a standard
+way</strong>, we keep this convention:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/filtering.html">filter_</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">df</span><span class="op">[[</span><span class="st">'x'</span><span class="op">]</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span> <span class="co"># Standard evaluation of the arguments, alternate form</span></span>
+<span><span class="co">#&gt;   x     y</span></span>
+<span><span class="co">#&gt; 1 3 FALSE</span></span>
+<span><span class="co">#&gt; 2 8 FALSE</span></span></code></pre></div>
+<p>So, <code><a href="../reference/filtering.html">svTidy::filter_()</a></code> allows both standard and
+non-standard evaluation of its arguments in the <em>same function</em>.
+Non-standard evaluation is signaled by using a <strong>formula</strong>,
+which is created in R thanks to the <code>~</code> operator. This way,
+when you read code you can immediately spot the non-standard evaluated
+arguments, thanks to the presence of that <code>~</code> operator. Also,
+notice that you can easily convert {dplyr} code into {svTidy} one: add
+an underscore at the end of the function name, and place a tilde in
+front of non-standard evaluated arguments… and it will be good most of
+the time.</p>
+<p>OK, but how is this better that data masking? Well, it is
+<em>somehow</em> referentially transparent. So, you can write this:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="op">~</span><span class="va">x</span> <span class="op">&gt;</span> <span class="fl">2</span> <span class="co"># Note that you do not need quo() here: ~ already captures the expression</span></span>
+<span><span class="fu"><a href="../reference/filtering.html">filter_</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">y</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x     y</span></span>
+<span><span class="co">#&gt; 1 3 FALSE</span></span>
+<span><span class="co">#&gt; 2 8 FALSE</span></span></code></pre></div>
+<p>Here, <code>y</code> is not a formula and is thus evaluated in a
+standard way. It resolves to <code>~x &gt; 2</code>, which is a formula.
+Thus, <code><a href="../reference/filtering.html">filter_()</a></code> evaluates it in a non-standard way, looking
+for <code>x</code> in <code>df</code>, as we are expecting, since we
+provided that context as first argument of <code><a href="../reference/filtering.html">filter_()</a></code>.
+<strong>We thus have both the advantages of non-standard evaluation of
+the argument (no repetition of <code>df</code>) and the advantages of
+standard evaluation (referential transparency).</strong></p>
+<p>Note that the formula is not new in R indeed. It is used in functions
+like <code><a href="https://rdrr.io/r/stats/t.test.html" class="external-link">stats::t.test()</a></code> or <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">stats::lm()</a></code> for
+instance. So, we do not introduce a new mechanism. We reuse one that
+already exists since a long time in the R language. However, in {svTidy}
+the formula is handled in a way that makes it as much similar to the
+Tidyverse as possible.</p>
+</div>
+<div class="section level2">
+<h2 id="further-advantages-of-formula-masking">Further advantages of formula masking<a class="anchor" aria-label="anchor" href="#further-advantages-of-formula-masking"></a>
+</h2>
+<p>Before we compare a more complex example, we have to introduce two
+other features of {svTidy} functions: <strong>computed argument
+names</strong> and the <strong>data-dot mechanism</strong>. We have also
+to replace the pipeline by a <strong>bullet-list construct</strong>.</p>
+<div class="section level3">
+<h3 id="computed-argument-name">Computed argument name<a class="anchor" aria-label="anchor" href="#computed-argument-name"></a>
+</h3>
+<p>There is another situation that is difficult to resolve with the
+Tidyverse functions. It is when the argument name is the name of a
+variable we create, say, with <code>mutate()</code>. A simple
+examples:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">mutate</span><span class="op">(</span><span class="va">df</span>, x2 <span class="op">=</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x     y x2</span></span>
+<span><span class="co">#&gt; 1 1 FALSE  1</span></span>
+<span><span class="co">#&gt; 2 3 FALSE  9</span></span>
+<span><span class="co">#&gt; 3 8 FALSE 64</span></span></code></pre></div>
+<p>The problem occurs when we want to compute the name of the new
+variable <code>x2</code>. In {dplyr}, you have to use <code>{{}}</code>
+(but here, it is using a different mechanism provided by the
+<code>glue()</code> function) and the <code>:=</code> operator instead
+of the <code>=</code> operator.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">my_mutate_dplyr</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">var</span>, <span class="va">expr</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span><span class="va">data</span>, <span class="st">"{{var}}"</span> <span class="op">:=</span> <span class="op">{</span><span class="op">{</span> <span class="va">expr</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu">my_mutate_dplyr</span><span class="op">(</span><span class="va">df</span>, <span class="va">x2</span>, <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x     y x2</span></span>
+<span><span class="co">#&gt; 1 1 FALSE  1</span></span>
+<span><span class="co">#&gt; 2 3 FALSE  9</span></span>
+<span><span class="co">#&gt; 3 8 FALSE 64</span></span></code></pre></div>
+<p>With {svTidy}, we have used single-sided formulas until now (the
+tilde <code>~</code> is on the left of the expression), but we can also
+use two-sided formulas, where the tilde is in the middle, like in
+<code>'varname' ~ expr</code>. This allows to compute the name of the
+new variable in a more straightforward way:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">my_mutate_svTidy</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">expr</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/mutating.html">mutate_</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">expr</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu">my_mutate_svTidy</span><span class="op">(</span><span class="va">df</span>, <span class="st">'x2'</span> <span class="op">~</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x     y x2</span></span>
+<span><span class="co">#&gt; 1 1 FALSE  1</span></span>
+<span><span class="co">#&gt; 2 3 FALSE  9</span></span>
+<span><span class="co">#&gt; 3 8 FALSE 64</span></span></code></pre></div>
+<p>If you want to separate the two terms of the formula as two different
+arguments, you can do it, but then you have to evaluate both arguments
+in a standard way (unless you process them in a special way using
+<strong>macro expansion</strong> that we will see here under):</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">my_mutate_svTidy2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">name</span>, <span class="va">expr</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/mutating.html">mutate_</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">name</span> <span class="op">~</span> <span class="va">expr</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu">my_mutate_svTidy2</span><span class="op">(</span><span class="va">df</span>, <span class="st">'x2'</span>, <span class="va">df</span><span class="op">$</span><span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x     y x2</span></span>
+<span><span class="co">#&gt; 1 1 FALSE  1</span></span>
+<span><span class="co">#&gt; 2 3 FALSE  9</span></span>
+<span><span class="co">#&gt; 3 8 FALSE 64</span></span></code></pre></div>
+<p>Finally, if you need to replace one or more variables in formulas,
+the same way injection does for Tidyverse, you must activate the
+<strong>“macro expansion”</strong> mechanism of {svTidy} by setting
+<code>. __macros__. &lt;- TRUE</code> at the beginning of the body of
+your function. Then, all variables in a formula that point to other
+formulas will be replaced in the initial expression before it is
+evaluated:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">my_mutate_svTidy3</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">name</span>, <span class="va">var</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">.__macros__.</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
+<span>  <span class="fu"><a href="../reference/mutating.html">mutate_</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">name</span> <span class="op">~</span> <span class="va">var</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu">my_mutate_svTidy3</span><span class="op">(</span><span class="va">df</span>, <span class="st">'x2'</span>, <span class="op">~</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x     y x2</span></span>
+<span><span class="co">#&gt; 1 1 FALSE  1</span></span>
+<span><span class="co">#&gt; 2 3 FALSE  9</span></span>
+<span><span class="co">#&gt; 3 8 FALSE 64</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="data-dot-mechanism-and-bullet-list-construct">Data-dot mechanism and bullet-list construct<a class="anchor" aria-label="anchor" href="#data-dot-mechanism-and-bullet-list-construct"></a>
+</h3>
+<p>The Tidyverse uses the pipeline operator <code>|&gt;</code> (or
+<code>%&gt;%</code> from {magrittr}) to chain together several
+operations on a data frame. This seems nice and reads well, but it glues
+together several expression into a giant one that is much less easy to
+debug. The pipe operator <code>|&gt;</code> is nice to make R code more
+readable when an instruction is made of several functions nested into
+each other. But we believe that chaining several separate operations
+using the same pipe operator <code>|&gt;</code> is overusing it. As an
+alternative, equally readable, we propose to use a pseudo-operator
+<code>.=</code> that we call a <strong>“bullet-list”</strong> operator.
+The idea is to present successive operations related together a little
+bit as a bullet list. An example will be more clear than a long
+explanation. In the Tidyverse, you would write something like this
+(using both data masking and tidy selection):</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">starwars</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># A Tidyverse pipeline using five of the main {dplyr} verbs</span></span>
+<span><span class="va">starwars_sum</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">starwars</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">name</span><span class="op">:</span><span class="va">homeworld</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># Note: get age 2 years after battle of Yavin (birth_year is year born Before Battle of Yavin)</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>age <span class="op">=</span> <span class="fl">2</span> <span class="op">+</span> <span class="va">birth_year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">gender</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">summarise</span><span class="op">(</span></span>
+<span>    mean_age  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">age</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    sd_age    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">age</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    n_age     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">age</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    mean_mass <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mass</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    sd_mass   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">mass</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    n_mass    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">mass</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">starwars_sum</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
+<span><span class="co">#&gt;   gender    mean_age sd_age n_age mean_mass sd_mass n_mass</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> feminine      48.4   18.8     5      56.3    16.3      3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> masculine     57.5   25.4    21      85.7    16.5     17</span></span></code></pre></div>
+<p><code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code>, <code>mutate()</code> and
+<code>summarise()</code> use data masking. <code>select()</code> and
+<code>group_by()</code> use tidy selection. There is no clue in the code
+of that. You have to look at the documentation, and this is mandatory to
+understand what this code does. Yet, this reduces the typing by avoiding
+quotes around variable names, and by avoiding to repeat
+<code>df$var</code>. It is possible to rewrite this code with {svTidy}
+the way we learned, by just appending underscore to the function name
+and prepending a tilde to non-standard evaluated arguments. But we can
+also replace the pipe operator by the bullet-list operator this way:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">starwars_sum2</span> <span class="op">&lt;-</span> <span class="op">{</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="va">starwars</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/filtering.html">filter_</a></span><span class="op">(</span><span class="op">~</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/selecting.html">select_</a></span><span class="op">(</span><span class="op">~</span><span class="va">name</span><span class="op">:</span><span class="va">homeworld</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/mutating.html">mutate_</a></span><span class="op">(</span>age <span class="op">=</span> <span class="op">~</span><span class="fl">2</span> <span class="op">+</span> <span class="va">birth_year</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/grouping.html">group_by_</a></span><span class="op">(</span><span class="op">~</span><span class="va">gender</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/summarising.html">summarise_</a></span><span class="op">(</span></span>
+<span>    mean_age  <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">age</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    sd_age    <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">age</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    n_age     <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">age</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    mean_mass <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mass</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    sd_mass   <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">mass</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    n_mass    <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">mass</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">starwars_sum2</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
+<span><span class="co">#&gt;   gender    mean_age sd_age n_age mean_mass sd_mass n_mass</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> feminine      48.4   18.8     5      56.3    16.3      3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> masculine     57.5   25.4    21      85.7    16.5     17</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">starwars_sum</span>, <span class="va">starwars_sum2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>The ‘{’ operator groups together <strong>several separate
+expressions</strong> that can be debugged more easily. We believe that
+the <code>.=</code> at the beginning of each line makes it even clearer
+that we have successive operations than when using the pipe
+<code>|&gt;</code> at the end of the line (compare both codes). However,
+there is something special here. <code>.=</code> is a pseudo-operator
+because it does nothing special. It is <code>.</code> followed by
+<code>=</code> meaning we assign to dot <code>.</code> the right-side of
+the expression after <code>=</code>. However, we do no specify the
+<code>data=</code> argument in the {svTidy} functions. We should have to
+write <code>.= filter_(., ~species == "Human")</code> for instance… but
+we dropped <code>.</code> here. This is because the {svTidy} function
+use an additional mechanism called <strong>“data-dot”</strong>. When the
+<code>data=</code> argument is not provided, the default <code>.</code>
+is inserted in the call of the function before it is executed. This
+allows to get code closer to the Tidyverse one, with just three changes:
+(1) replace the pipe <code>|&gt;</code> at the end by a bullet-list
+<code>.=</code> at the beginning of a line, (2) add an underscore after
+the name of the functions, and (3) add a tilde before non-standard
+arguments (and, optionally, group together the successive operations
+with ‘{}’).</p>
+<p>Now, if we want to reuse this code in a function with various
+argument, things become much more complicated with the Tidyverse,
+because of the required injections and special constructs for names of
+variables, as briefly explained at the beginning of this vignette (it is
+more detailed in “<a href="https://dplyr.tidyverse.org/articles/programming.html" class="external-link">Programming
+with dplyr</a>”).</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">my_summarise_dplyr</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span>, <span class="va">selection</span>, <span class="va">group</span>, <span class="va">year</span>, <span class="va">var</span>, <span class="va">var2</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">var2_sym</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/name.html" class="external-link">as.symbol</a></span><span class="op">(</span><span class="va">var2</span><span class="op">)</span> <span class="co"># Must provide a symbol for names!</span></span>
+<span>  <span class="va">data</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">subset</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">select</span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">selection</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">mutate</span><span class="op">(</span><span class="op">{</span><span class="op">{</span><span class="va">var</span><span class="op">}</span><span class="op">}</span> <span class="op">:=</span> <span class="va">.env</span><span class="op">$</span><span class="va">year</span> <span class="op">+</span> <span class="va">.data</span><span class="op">$</span><span class="va">birth_year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">group_by</span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">group</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">summarise</span><span class="op">(</span></span>
+<span>      <span class="st">"mean_{{var}}"</span>      <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">var</span> <span class="op">}</span><span class="op">}</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>      <span class="st">"sd_{{var}}"</span>        <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">var</span> <span class="op">}</span><span class="op">}</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>      <span class="st">"n_{{var}}"</span>         <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">var</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>      <span class="st">"mean_{{var2_sym}}"</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">.data</span><span class="op">[[</span><span class="va">var2</span><span class="op">]</span><span class="op">]</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>      <span class="st">"sd_{{var2_sym}}"</span>   <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">.data</span><span class="op">[[</span><span class="va">var2</span><span class="op">]</span><span class="op">]</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>      <span class="st">"n_{{var2_sym}}"</span>    <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">.data</span><span class="op">[[</span><span class="va">var2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">starwars_sum3</span> <span class="op">&lt;-</span> <span class="fu">my_summarise_dplyr</span><span class="op">(</span><span class="va">starwars</span>, subset <span class="op">=</span> <span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span>,</span>
+<span>  selection <span class="op">=</span> <span class="va">name</span><span class="op">:</span><span class="va">homeworld</span>, group <span class="op">=</span> <span class="va">gender</span>, year <span class="op">=</span> <span class="fl">2</span>, var <span class="op">=</span> <span class="va">age</span>, var2 <span class="op">=</span> <span class="st">'mass'</span><span class="op">)</span></span>
+<span><span class="va">starwars_sum3</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
+<span><span class="co">#&gt;   gender    mean_age sd_age n_age mean_mass sd_mass n_mass</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> feminine      48.4   18.8     5      56.3    16.3      3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> masculine     57.5   25.4    21      85.7    16.5     17</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">starwars_sum</span>, <span class="va">starwars_sum3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>Note that <code>var=</code> and <code>var2=</code> illustrate the two
+ways of defining a variable, by a symbol for <code>var=</code> and by
+its name for <code>var2=</code> (character string). In the case of
+<code>var2=</code>, it cannot be used as such in the name substitution.
+It must be converted into a symbol first (in <code>var_sym</code>). The
+way they are dealt with by the Tidyverse functions differ, as you can
+see. Now, here is the {svTidy} version:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">my_summarise_svTidy</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span>, <span class="va">selection</span>, <span class="va">group</span>, <span class="va">year</span>, <span class="va">var</span>, <span class="va">var2</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">.__macros__.</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
+<span>  <span class="va">fvar2</span> <span class="op">&lt;-</span> <span class="fu">svBase</span><span class="fu">::</span><span class="fu"><a href="https://www.sciviews.org/svBase/reference/f_.html" class="external-link">f_</a></span><span class="op">(</span><span class="va">var2</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="va">data</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/filtering.html">filter_</a></span><span class="op">(</span><span class="va">subset</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/selecting.html">select_</a></span><span class="op">(</span><span class="va">selection</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/mutating.html">mutate_</a></span><span class="op">(</span><span class="va">var</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">birth_year</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/grouping.html">group_by_</a></span><span class="op">(</span><span class="va">group</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/summarising.html">summarise_</a></span><span class="op">(</span></span>
+<span>    <span class="st">'mean_{{var}}'</span>  <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">var</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    <span class="st">'sd_{{var}}'</span>    <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">var</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    <span class="st">'n_{{var}}'</span>     <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="st">'mean_{{var2}}'</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">fvar2</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    <span class="st">'sd_{{var2}}'</span>   <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">fvar2</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    <span class="st">'n_{{var2}}'</span>    <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">fvar2</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">starwars_sum3</span> <span class="op">&lt;-</span> <span class="fu">my_summarise_svTidy</span><span class="op">(</span><span class="va">starwars</span>, subset <span class="op">=</span> <span class="op">~</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span>,</span>
+<span>  selection <span class="op">=</span> <span class="op">~</span><span class="va">name</span><span class="op">:</span><span class="va">homeworld</span>, group <span class="op">=</span> <span class="op">~</span><span class="va">gender</span>, year <span class="op">=</span> <span class="fl">2</span>, var <span class="op">=</span> <span class="op">~</span><span class="va">age</span>, var2 <span class="op">=</span> <span class="st">'mass'</span><span class="op">)</span></span>
+<span><span class="va">starwars_sum3</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
+<span><span class="co">#&gt;   gender    mean_age sd_age n_age mean_mass sd_mass n_mass</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> feminine      48.4   18.8     5      56.3    16.3      3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> masculine     57.5   25.4    21      85.7    16.5     17</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">starwars_sum</span>, <span class="va">starwars_sum3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>You notice that this last code is leaner than the Tidyverse version
+and it is also much closer to the initial bullet-point version. First
+line <code>var &lt;- {</code> was replaced by the function definition
+<code>fun &lt;- function(args) {</code>.
+<code>.__macros__. &lt;- TRUE</code> is added in the body of the
+function only if it is required (here for <code><a href="../reference/summarising.html">summarise_()</a></code>.)
+Then, you simply replace the expressions by the arguments names like you
+do in plain R code (replace <code>starwars</code> by <code>data</code>,
+<code>~species == "Human"</code> inside <code><a href="../reference/filtering.html">filter_()</a></code> by
+<code>subset</code>, etc.) Finally, since macro expansion only work for
+variables that contain formulas, and <code>var2</code> is a character
+string, we have to convert it into a formula before use. The function
+<code><a href="https://www.sciviews.org/svBase/reference/f_.html" class="external-link">svBase::f_()</a></code> does this in a simple way. In practice, you
+should prefer to directly use a formula for such arguments, like
+<code>var=</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="performance-comparison">Performance comparison<a class="anchor" aria-label="anchor" href="#performance-comparison"></a>
+</h3>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bm</span> <span class="op">&lt;-</span> <span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
+<span>  dplyr <span class="op">=</span> <span class="fu">my_summarise_dplyr</span><span class="op">(</span><span class="va">starwars</span>, subset <span class="op">=</span> <span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span>,</span>
+<span>  selection <span class="op">=</span> <span class="va">name</span><span class="op">:</span><span class="va">homeworld</span>, group <span class="op">=</span> <span class="va">gender</span>, year <span class="op">=</span> <span class="fl">2</span>, var <span class="op">=</span> <span class="va">age</span>, var2 <span class="op">=</span> <span class="st">'mass'</span><span class="op">)</span>,</span>
+<span>  svTidy <span class="op">=</span> <span class="fu">my_summarise_svTidy</span><span class="op">(</span><span class="va">starwars</span>, subset <span class="op">=</span> <span class="op">~</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span>,</span>
+<span>  selection <span class="op">=</span> <span class="op">~</span><span class="va">name</span><span class="op">:</span><span class="va">homeworld</span>, group <span class="op">=</span> <span class="op">~</span><span class="va">gender</span>, year <span class="op">=</span> <span class="fl">2</span>, var <span class="op">=</span> <span class="op">~</span><span class="va">age</span>, var2 <span class="op">=</span> <span class="st">'mass'</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">bm</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 6</span></span></span>
+<span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        7.26ms   7.37ms      135.   20.58KB     6.63</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy     903.66µs 947.48µs     <span style="text-decoration: underline;">1</span>048.    9.81KB     8.30</span></span></code></pre></div>
+<p>In such a small dataset, we essentially measure the overhead of the
+two approaches, and we can see that {svTidy} is 7.8 times faster, and it
+requires 2.1 times less memory than {dplyr} in this case. With larger
+datasets, the overhead becomes negligible, and results will be
+different. However, for code to be incorporated in functions that can
+possibly be run a large number of times (for instance in loops), this
+may be important.</p>
+</div>
+</div>
 <div class="section level2">
 <h2 id="how-to-convert-tidyverse-code">How to convert tidyverse code?<a class="anchor" aria-label="anchor" href="#how-to-convert-tidyverse-code"></a>
 </h2>
-<p>You have only a few rules to remember to convert Tidyverse code using
-{dplyr} and/or {tidyr} into {svTidy} code:</p>
+<p>If you are convinced, you will probably have to convert existing or
+future {dplyr}/{tidyr} code into {svTidy}. You have only a few rules to
+remember to do so:</p>
 <ul>
-<li><p>append ’_’ at the end of the function name (ex.:
+<li><p>append ‘_’ at the end of the function name (ex.:
 <code>select()</code> -&gt; <code><a href="../reference/selecting.html">select_()</a></code>), and make sure that
-{svTidy} is loaded higher in the search path than {dplyr} and
-{tidyr}.</p></li>
+{svTidy} is loaded higher in the search path than {dplyr} and {tidyr},
+if the later packages are loaded too.</p></li>
 <li>
 <p>either:</p>
 <ul>
@@ -145,11 +655,12 @@ variable names. You can keep <code>~var</code>instead of
 </ul>
 </li>
 <li><p>Use “fast” collapse functions instead of base equivalent (for
-instance, <code>fmean()</code>instead of <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean()</a></code>). In fact,
+instance, <code>fmean()</code> instead of <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean()</a></code>). In fact,
 you can continue to use base function, but you will not benefit from the
 speed increase of the fast functions, especially if your code involves
-grouped data.</p></li>
-<li><p>The ’_’ function automatically ungroup the data at the enc, on
+grouped data. Of course, also load the {collapse} package using
+<code><a href="https://fastverse.org/collapse/" class="external-link">library(collapse)</a></code> before use.</p></li>
+<li><p>The ‘_’ function automatically ungroups the data at the end, on
 the contrary to their Tidyverse equivalent [note: not true for all
 functions for now, check your results].</p></li>
 <li><p>You benefit from referential transparency in SE mode: if
@@ -158,18 +669,19 @@ functions for now, check your results].</p></li>
 argument, like this <code>{{ x }}</code> (only required in Tidyverse
 functions). Idem for formulas: write <code>x &lt;- ~var</code>, and you
 can use <code>x</code> everywhere instead of <code>~var</code>.</p></li>
-<li><p>To rename variables, you replace the (ugly) Tidyverse syntax
+<li><p>To rename variables, you replace the Tidyverse syntax
 <code>{{varname}} := expr</code> by a two-sided formula:
 <code>varname ~ expr</code>.</p></li>
 <li><p>If a function accepts both a data frame or a vector as first
 argument (e.g., <code><a href="../reference/tidying.html">replace_na_()</a></code>, you must write
 <code>v = vector</code> if you provide a vector, to mark your intention
 to use it with something else than a data frame.</p></li>
-<li><p>The ’_’ functions are “data-dot”. It means they inject
+<li><p>The ‘_’ functions are “data-dot”. It means they inject
 <code>.</code> as first argument (usually <code>.data=</code> if no data
-frame is provided.</p></li>
+frame is provided).</p></li>
 <li><p>You cannot mix SE code and NSE code through formulas. Either use
-SE code for all arguments, or formulas only.</p></li>
+SE code for all arguments, or formulas only, inside a function
+call.</p></li>
 <li><p>Formulas are converted into expressions that are evaluated in the
 environment where the first provided formula was created. If you need an
 evaluation in a different environment, you can use
