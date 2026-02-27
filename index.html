@@ -120,7 +120,7 @@
 
 <!-- badges: start -->
 
-<p>SciViews equivalent functions of ‘dplyr’ and ‘tidyr’, but faster and using a standard evaluation of arguments or formulas.</p>
+<p>SciViews equivalent functions of {dplyr} and {tidyr}, but faster and using a standard evaluation of arguments or formulas.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -132,14 +132,126 @@
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p>This is a basic example which shows you how to solve a common problem:</p>
+<p>This is a basic example which compares a rather classical Tidyverse pipeline using {dplyr} with the equivalent in {svTidy}. For all humans in the <code>starwars</code> dataset, we want the mean and standard deviation of their age, two years after the Battle of Yavin (note that <code>birth_year</code> is in years before that battle), grouped by their gender. We also want the number of non-missing observations in each group.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/SciViews/svTidy" class="external-link">svTidy</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">starwars</span><span class="op">)</span></span>
+<span><span class="va">ages_dplyr</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">starwars</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>age <span class="op">=</span> <span class="fl">2</span> <span class="op">+</span> <span class="va">birth_year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">gender</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>    mean_age  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">age</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    sd_age    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">age</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    n_age     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">age</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">ages_dplyr</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 4</span></span>
+<span><span class="co">#&gt;   gender    mean_age sd_age n_age</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 feminine      48.4   18.8     5</span></span>
+<span><span class="co">#&gt; 2 masculine     57.5   25.4    21</span></span></code></pre></div>
+<p>Here is the {svTidy} version (can you spot the three differences?):</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/SciViews/svTidy" class="external-link">svTidy</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Registered S3 methods overwritten by 'svMisc':</span></span>
 <span><span class="co">#&gt;   method        from  </span></span>
 <span><span class="co">#&gt;   print.section svBase</span></span>
 <span><span class="co">#&gt;   str.section   svBase</span></span>
-<span><span class="co">## basic example code (todo..)</span></span></code></pre></div>
+<span><span class="va">ages_svTidy</span> <span class="op">&lt;-</span> <span class="op">{</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="va">starwars</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/filtering.html">filter_</a></span><span class="op">(</span><span class="op">~</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/mutating.html">mutate_</a></span><span class="op">(</span>age <span class="op">=</span> <span class="op">~</span><span class="fl">2</span> <span class="op">+</span> <span class="va">birth_year</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/grouping.html">group_by_</a></span><span class="op">(</span><span class="op">~</span><span class="va">gender</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/summarising.html">summarise_</a></span><span class="op">(</span></span>
+<span>    mean_age  <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">age</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    sd_age    <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">age</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    n_age     <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">age</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">ages_dplyr</span>, <span class="va">ages_svTidy</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>Differences:</p>
+<ol style="list-style-type: decimal">
+<li><p>The pipeline is replaced by a so-called <strong>bullet-point</strong> style using the <code>.=</code> pseudo-operator at the beginning of each step, conveying the idea of a list of instructions successively applied to the data. These are separate instructions, easier to debug than the single, extra-long expression as in the Tidyverse pipeline. The whole is grouped together by curly braces <code><a href="https://rdrr.io/r/base/Paren.html" class="external-link">{ }</a></code>, which is a common R idiom to group several instructions.</p></li>
+<li><p>{svTidy} functions have same name as the {dplyr} ones, but with an <strong>underscore at the end</strong>.</p></li>
+<li><p>All arguments that are <strong>not</strong> evaluated in a standard way are expressed as <strong>formulas</strong> (starting with a tilde <code>~</code>) in the {svTidy} functions. This conveys more explicitly the idea that they are evaluated in a special way… and it has other advantages; Read here under…</p></li>
+</ol>
+<p>Now, if you want to generalize this code to other datasets, you could be tempted to place it in a function. With {dplyr}, you have to take care of non-standard evaluation in a non trivial way and understand what <strong>quasi-quotation</strong> is, how to use <code>:=</code> for <strong>variables in names</strong>, … Here is a version of the above code in a function with {dplyr}, then, with {svTidy}:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ages_dplyr</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span>, <span class="va">var</span>, <span class="va">year</span>, <span class="va">group</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">data</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">subset</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span><span class="va">var</span><span class="op">}</span><span class="op">}</span> <span class="op">:=</span> <span class="va">.env</span><span class="op">$</span><span class="va">year</span> <span class="op">+</span> <span class="va">.data</span><span class="op">$</span><span class="va">birth_year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">group</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>      <span class="st">"mean_{{var}}"</span> <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">var</span> <span class="op">}</span><span class="op">}</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>      <span class="st">"sd_{{var}}"</span>   <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">var</span> <span class="op">}</span><span class="op">}</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>      <span class="st">"n_{{var}}"</span>    <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">var</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">ages_svTidy</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span>, <span class="va">var</span>, <span class="va">year</span>, <span class="va">group</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">.__macros__.</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="va">data</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/filtering.html">filter_</a></span><span class="op">(</span><span class="va">subset</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/mutating.html">mutate_</a></span><span class="op">(</span><span class="va">var</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">birth_year</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/grouping.html">group_by_</a></span><span class="op">(</span><span class="va">group</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/summarising.html">summarise_</a></span><span class="op">(</span></span>
+<span>    <span class="st">"mean_{{var}}"</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">var</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    <span class="st">"sd_{{var}}"</span>   <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">var</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    <span class="st">"n_{{var}}"</span>    <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>The {dplyr} version needs substantial edition of the code to include it in a function and exhibits ultimatelly a less readable result that {svTidy} that generalizes the code more smoothly. Here is the result of using these functions:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ages_dplyr2</span> <span class="op">&lt;-</span> <span class="fu">ages_dplyr</span><span class="op">(</span><span class="va">starwars</span>, <span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span>, <span class="va">age</span>, <span class="fl">2</span>, <span class="va">gender</span><span class="op">)</span></span>
+<span><span class="va">ages_svTidy2</span> <span class="op">&lt;-</span> <span class="fu">ages_svTidy</span><span class="op">(</span><span class="va">starwars</span>, <span class="op">~</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span>, <span class="op">~</span><span class="va">age</span>, <span class="fl">2</span>, <span class="op">~</span><span class="va">gender</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="va">ages_dplyr2</span>, <span class="va">ages_svTidy2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span><span class="va">ages_dplyr2</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 4</span></span>
+<span><span class="co">#&gt;   gender    mean_age sd_age n_age</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 feminine      48.4   18.8     5</span></span>
+<span><span class="co">#&gt; 2 masculine     57.5   25.4    21</span></span></code></pre></div>
+<p>Note that the <code>ages_svTidy()</code> function somehow “inherits” the properties of the underlying {svTidy} functions on the arguments that are evaluated in a non-standard way, that have to be provided as formulas.</p>
+<p>Now, some more improvement in <code><a href="reference/summarising.html">summarise_()</a></code> can be done by using {collapse} <strong>fast statistical functions</strong>:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://fastverse.org/collapse/" class="external-link">collapse</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span>, warn.conflicts <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; collapse 2.1.0, see ?`collapse-package` or ?`collapse-documentation`</span></span>
+<span><span class="va">ages_svTidy_fast</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span>, <span class="va">var</span>, <span class="va">year</span>, <span class="va">group</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">.__macros__.</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="va">data</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/filtering.html">filter_</a></span><span class="op">(</span><span class="va">subset</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/mutating.html">mutate_</a></span><span class="op">(</span><span class="va">var</span> <span class="op">~</span> <span class="va">year</span> <span class="op">+</span> <span class="va">birth_year</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/grouping.html">group_by_</a></span><span class="op">(</span><span class="va">group</span><span class="op">)</span></span>
+<span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="reference/summarising.html">summarise_</a></span><span class="op">(</span></span>
+<span>    <span class="st">"mean_{{var}}"</span> <span class="op">~</span> <span class="fu"><a href="https://fastverse.org/collapse/reference/fmean.html" class="external-link">fmean</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span>,</span>
+<span>    <span class="st">"sd_{{var}}"</span>   <span class="op">~</span> <span class="fu"><a href="https://fastverse.org/collapse/reference/fvar_fsd.html" class="external-link">fsd</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span>,</span>
+<span>    <span class="st">"n_{{var}}"</span>    <span class="op">~</span> <span class="fu"><a href="https://fastverse.org/collapse/reference/fnobs.html" class="external-link">fnobs</a></span><span class="op">(</span><span class="va">var</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">ages_svTidy3</span> <span class="op">&lt;-</span> <span class="fu">ages_svTidy_fast</span><span class="op">(</span><span class="va">starwars</span>, <span class="op">~</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span>, <span class="op">~</span><span class="va">age</span>, <span class="fl">2</span>, <span class="op">~</span><span class="va">gender</span><span class="op">)</span></span>
+<span><span class="va">ages_svTidy3</span> <span class="co"># Note: there is a slight difference in the last decimals</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 4</span></span>
+<span><span class="co">#&gt;   gender    mean_age sd_age n_age</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 feminine      48.4   18.8     5</span></span>
+<span><span class="co">#&gt; 2 masculine     57.5   25.4    21</span></span></code></pre></div>
+<p>Now, let’s compare {dplyr} and {svTidy} in terms of speed and memory use:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bm</span> <span class="op">&lt;-</span> <span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span></span>
+<span>  dplyr <span class="op">=</span> <span class="fu">ages_dplyr</span><span class="op">(</span><span class="va">starwars</span>, <span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span>, <span class="va">age</span>, <span class="fl">2</span>, <span class="va">gender</span><span class="op">)</span>,</span>
+<span>  svTidy <span class="op">=</span> <span class="fu">ages_svTidy_fast</span><span class="op">(</span><span class="va">starwars</span>, <span class="op">~</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span>, <span class="op">~</span><span class="va">age</span>, <span class="fl">2</span>, <span class="op">~</span><span class="va">gender</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">bm</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 6</span></span>
+<span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
+<span><span class="co">#&gt;   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 dplyr        1.31ms   1.36ms      722.    85.6KB     113.</span></span>
+<span><span class="co">#&gt; 2 svTidy     155.76µs 163.86µs     5988.    36.6KB     104.</span></span></code></pre></div>
+<p>With such a small dataset, we essentially measure the overhead of the two approaches, and we can see that {svTidy} is 8.3 times faster, and it requires 2.3 times less memory than {dplyr} in this case. Of course, result vary with the functions used and size of the datasets.</p>
 <p>For further instructions, please, refer to the help pages at <a href="https://www.sciviews.org/svTidy/" class="uri">https://www.sciviews.org/svTidy/</a>.</p>
 </div>
 <div class="section level2">

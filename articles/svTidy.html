@@ -118,7 +118,7 @@
                         <h4 data-toc-skip class="author">Philippe
 Grosjean</h4>
             
-            <h4 data-toc-skip class="date">2026-02-26</h4>
+            <h4 data-toc-skip class="date">2026-02-27</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/SciViews/svTidy/blob/main/vignettes/svTidy.Rmd" class="external-link"><code>vignettes/svTidy.Rmd</code></a></small>
       <div class="hidden name"><code>svTidy.Rmd</code></div>
@@ -186,7 +186,7 @@ function. The following code does roughly the same operation on
 <code>df</code> than above, but without repeating the name of the data
 frame:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">x</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">x</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   x     y</span></span>
 <span><span class="co">#&gt; 1 3 FALSE</span></span>
 <span><span class="co">#&gt; 2 8 FALSE</span></span></code></pre></div>
@@ -230,16 +230,16 @@ is referentially transparent. You can write this:</p>
 expected it to work):</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/defusing-advanced.html" class="external-link">quo</a></span><span class="op">(</span><span class="va">x</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span> <span class="co"># Need quo() here to defer evaluation of the expression</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">y</span><span class="op">)</span> <span class="co"># Error: object 'y' in not the one you meant!</span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">y</span><span class="op">)</span> <span class="co"># Error: object 'y' in not the one you meant!</span></span>
 <span><span class="co">#&gt; [1] x y</span></span>
 <span><span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span></span></code></pre></div>
 <p>Here, it is the <code>y</code> variable in <code>df</code> that is
 used, not the expression in <code>y</code> in the calling environment.
 The workaround is, indeed, more complicated: you have to
 <strong>“inject”</strong> the expression in <code>y</code> into the
-<code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code> call, using the <code>{{</code> operator:</p>
+<code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter()</a></code> call, using the <code>{{</code> operator:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">df</span>, <span class="op">{</span><span class="op">{</span> <span class="va">y</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">df</span>, <span class="op">{</span><span class="op">{</span> <span class="va">y</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   x     y</span></span>
 <span><span class="co">#&gt; 1 3 FALSE</span></span>
 <span><span class="co">#&gt; 2 8 FALSE</span></span></code></pre></div>
@@ -260,7 +260,7 @@ arguments help here to make everything smooth.
 <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">dplyr::filter()</a></code> does not allow to do this:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_filter_dplyr</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu">my_filter_dplyr</span><span class="op">(</span><span class="va">df</span>, <span class="va">x</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `filter()`:</span></span></span>
@@ -274,7 +274,7 @@ indicate we want to inject an expression inside another one before its
 evaluation.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_filter_dplyr2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">data</span>, <span class="op">{</span><span class="op">{</span> <span class="va">subset</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">data</span>, <span class="op">{</span><span class="op">{</span> <span class="va">subset</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu">my_filter_dplyr2</span><span class="op">(</span><span class="va">df</span>, <span class="va">x</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   x     y</span></span>
@@ -300,8 +300,8 @@ For instance, the equivalent of <code>filter(df, x &gt; 2)</code> in
 <span><span class="co">#&gt; 2 8 FALSE</span></span></code></pre></div>
 <p>First note that {svTidy} functions equivalent to {dplyr} or {tidyr}
 ones have an underscore at the end of their name (<code><a href="../reference/filtering.html">filter_()</a></code>
-<em>vs</em> <code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code>, or <code><a href="../reference/mutating.html">mutate_()</a></code>
-<em>vs</em>. <code>mutate()</code>, etc.) In older versions of {dplyr}
+<em>vs</em> <code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter()</a></code>, or <code><a href="../reference/mutating.html">mutate_()</a></code>
+<em>vs</em>. <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code>, etc.) In older versions of {dplyr}
 and {tidyr}, the functions with an underscore at the end were the
 standard evaluation version of the functions without underscore. They
 are now defunct in {dplyr} version &gt;= 1.2.0. Since the {svTidy}
@@ -357,10 +357,10 @@ to replace the pipeline by a <strong>bullet-list construct</strong>.</p>
 </h3>
 <p>There is another situation that is difficult to resolve with the
 Tidyverse functions. It is when the argument name is the name of a
-variable we create, say, with <code>mutate()</code>. A simple
+variable we create, say, with <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code>. A simple
 examples:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">mutate</span><span class="op">(</span><span class="va">df</span>, x2 <span class="op">=</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">df</span>, x2 <span class="op">=</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   x     y x2</span></span>
 <span><span class="co">#&gt; 1 1 FALSE  1</span></span>
 <span><span class="co">#&gt; 2 3 FALSE  9</span></span>
@@ -372,7 +372,7 @@ variable <code>x2</code>. In {dplyr}, you have to use <code>{{}}</code>
 of the <code>=</code> operator.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_mutate_dplyr</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">var</span>, <span class="va">expr</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu">mutate</span><span class="op">(</span><span class="va">data</span>, <span class="st">"{{var}}"</span> <span class="op">:=</span> <span class="op">{</span><span class="op">{</span> <span class="va">expr</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">data</span>, <span class="st">"{{var}}"</span> <span class="op">:=</span> <span class="op">{</span><span class="op">{</span> <span class="va">expr</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu">my_mutate_dplyr</span><span class="op">(</span><span class="va">df</span>, <span class="va">x2</span>, <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   x     y x2</span></span>
@@ -447,12 +447,12 @@ explanation. In the Tidyverse, you would write something like this
 <span><span class="co"># A Tidyverse pipeline using five of the main {dplyr} verbs</span></span>
 <span><span class="va">starwars_sum</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">starwars</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="va">name</span><span class="op">:</span><span class="va">homeworld</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Human"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">name</span><span class="op">:</span><span class="va">homeworld</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># Note: get age 2 years after battle of Yavin (birth_year is year born Before Battle of Yavin)</span></span>
-<span>  <span class="fu">mutate</span><span class="op">(</span>age <span class="op">=</span> <span class="fl">2</span> <span class="op">+</span> <span class="va">birth_year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">gender</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">summarise</span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>age <span class="op">=</span> <span class="fl">2</span> <span class="op">+</span> <span class="va">birth_year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">gender</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
 <span>    mean_age  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">age</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    sd_age    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">age</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    n_age     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">age</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -466,9 +466,9 @@ explanation. In the Tidyverse, you would write something like this
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> feminine      48.4   18.8     5      56.3    16.3      3</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> masculine     57.5   25.4    21      85.7    16.5     17</span></span></code></pre></div>
-<p><code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code>, <code>mutate()</code> and
-<code>summarise()</code> use data masking. <code>select()</code> and
-<code>group_by()</code> use tidy selection. There is no clue in the code
+<p><code><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter()</a></code>, <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code> and
+<code><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise()</a></code> use data masking. <code><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select()</a></code> and
+<code><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by()</a></code> use tidy selection. There is no clue in the code
 of that. You have to look at the documentation, and this is mandatory to
 understand what this code does. Yet, this reduces the typing by avoiding
 quotes around variable names, and by avoiding to repeat
@@ -531,11 +531,11 @@ with dplyr</a>”).</p>
 <code class="sourceCode R"><span><span class="va">my_summarise_dplyr</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span>, <span class="va">selection</span>, <span class="va">group</span>, <span class="va">year</span>, <span class="va">var</span>, <span class="va">var2</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">var2_sym</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/name.html" class="external-link">as.symbol</a></span><span class="op">(</span><span class="va">var2</span><span class="op">)</span> <span class="co"># Must provide a symbol for names!</span></span>
 <span>  <span class="va">data</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">subset</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">select</span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">selection</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">mutate</span><span class="op">(</span><span class="op">{</span><span class="op">{</span><span class="va">var</span><span class="op">}</span><span class="op">}</span> <span class="op">:=</span> <span class="va">.env</span><span class="op">$</span><span class="va">year</span> <span class="op">+</span> <span class="va">.data</span><span class="op">$</span><span class="va">birth_year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">group_by</span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">group</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">summarise</span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">subset</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">selection</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span><span class="va">var</span><span class="op">}</span><span class="op">}</span> <span class="op">:=</span> <span class="va">.env</span><span class="op">$</span><span class="va">year</span> <span class="op">+</span> <span class="va">.data</span><span class="op">$</span><span class="va">birth_year</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">group</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
 <span>      <span class="st">"mean_{{var}}"</span>      <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">var</span> <span class="op">}</span><span class="op">}</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>      <span class="st">"sd_{{var}}"</span>        <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">var</span> <span class="op">}</span><span class="op">}</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>      <span class="st">"n_{{var}}"</span>         <span class="op">:=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="op">{</span><span class="op">{</span> <span class="va">var</span> <span class="op">}</span><span class="op">}</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -619,10 +619,10 @@ should prefer to directly use a formula for such arguments, like
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        7.26ms   7.37ms      135.   20.58KB     6.63</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy     903.66µs 947.48µs     <span style="text-decoration: underline;">1</span>048.    9.81KB     8.30</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        7.45ms   7.74ms      127.   20.58KB     6.81</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy     926.91µs 977.84µs     <span style="text-decoration: underline;">1</span>010.    9.81KB     8.40</span></span></code></pre></div>
 <p>In such a small dataset, we essentially measure the overhead of the
-two approaches, and we can see that {svTidy} is 7.8 times faster, and it
+two approaches, and we can see that {svTidy} is 7.9 times faster, and it
 requires 2.1 times less memory than {dplyr} in this case. With larger
 datasets, the overhead becomes negligible, and results will be
 different. However, for code to be incorporated in functions that can
@@ -638,7 +638,7 @@ future {dplyr}/{tidyr} code into {svTidy}. You have only a few rules to
 remember to do so:</p>
 <ul>
 <li><p>append ‘_’ at the end of the function name (ex.:
-<code>select()</code> -&gt; <code><a href="../reference/selecting.html">select_()</a></code>), and make sure that
+<code><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select()</a></code> -&gt; <code><a href="../reference/selecting.html">select_()</a></code>), and make sure that
 {svTidy} is loaded higher in the search path than {dplyr} and {tidyr},
 if the later packages are loaded too.</p></li>
 <li>
@@ -655,7 +655,7 @@ variable names. You can keep <code>~var</code>instead of
 </ul>
 </li>
 <li><p>Use “fast” collapse functions instead of base equivalent (for
-instance, <code>fmean()</code> instead of <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean()</a></code>). In fact,
+instance, <code><a href="https://fastverse.org/collapse/reference/fmean.html" class="external-link">fmean()</a></code> instead of <code><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean()</a></code>). In fact,
 you can continue to use base function, but you will not benefit from the
 speed increase of the fast functions, especially if your code involves
 grouped data. Of course, also load the {collapse} package using

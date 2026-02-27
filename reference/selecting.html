@@ -117,7 +117,7 @@ helpers</p></li>
 <span></span>
 <span><span class="fu">rename_</span><span class="op">(</span>.data <span class="op">=</span> <span class="op">(</span><span class="va">.</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">rename_with_</span><span class="op">(</span>.data <span class="op">=</span> <span class="op">(</span><span class="va">.</span><span class="op">)</span>, <span class="va">.fn</span>, .cols <span class="op">=</span> <span class="op">~</span><span class="fu">everything</span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">rename_with_</span><span class="op">(</span>.data <span class="op">=</span> <span class="op">(</span><span class="va">.</span><span class="op">)</span>, <span class="va">.fn</span>, .cols <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">all_of</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -296,7 +296,7 @@ or an error is raised.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          21.4   4 121.0 109</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Use tidy-select helpers</span></span></span>
-<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="fu">starts_with</span><span class="op">(</span><span class="st">"d"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"d"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                      disp drat</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4           160.0 3.90</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag       160.0 3.90</span>
@@ -330,7 +330,7 @@ or an error is raised.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino        145.0 3.62</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora       301.0 3.54</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          121.0 4.11</span>
-<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="fu">ends_with</span><span class="op">(</span><span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">ends_with</a></span><span class="op">(</span><span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                      disp  hp</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4           160.0 110</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag       160.0 110</span>
@@ -364,7 +364,7 @@ or an error is raised.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Ferrari Dino        145.0 175</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Maserati Bora       301.0 335</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          121.0 109</span>
-<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="fu">contains</span><span class="op">(</span><span class="st">"a"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">contains</a></span><span class="op">(</span><span class="st">"a"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                     drat am gear carb</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4           3.90  1    4    4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag       3.90  1    4    4</span>
@@ -436,7 +436,7 @@ or an error is raised.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          121.0 109 4.11 2.780 18.60  1  1    4    2</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Select all numeric columns</span></span></span>
-<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="fu">where</span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                      mpg cyl  disp  hp drat    wt  qsec vs am gear carb</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4           21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag       21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4</span>
@@ -472,7 +472,7 @@ or an error is raised.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Combine multiple selection methods</span></span></span>
-<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="va">mpg</span>, <span class="op">~</span><span class="fu">starts_with</span><span class="op">(</span><span class="st">"d"</span><span class="op">)</span>, <span class="op">~</span><span class="va">hp</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="va">mpg</span>, <span class="op">~</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"d"</span><span class="op">)</span>, <span class="op">~</span><span class="va">hp</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                      mpg  disp drat  hp</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4           21.0 160.0 3.90 110</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag       21.0 160.0 3.90 110</span>
@@ -925,7 +925,7 @@ or an error is raised.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Volvo 142E          21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Rename only selected columns</span></span></span>
-<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">rename_with_</span><span class="op">(</span><span class="va">toupper</span>, .cols <span class="op">=</span> <span class="op">~</span><span class="fu">starts_with</span><span class="op">(</span><span class="st">"d"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span> <span class="fu">rename_with_</span><span class="op">(</span><span class="va">toupper</span>, .cols <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"d"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                      mpg cyl  DISP  hp DRAT    wt  qsec vs am gear carb</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4           21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Mazda RX4 Wag       21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4</span>
@@ -1037,7 +1037,7 @@ or an error is raised.</p></dd>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Use in data pipeline</span></span></span>
 <span class="r-in"><span><span class="va">mtcars</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="fu">where</span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">select_</span><span class="op">(</span><span class="op">~</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html" class="external-link">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">rename_with_</span><span class="op">(</span><span class="va">tolower</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="filtering.html">filter_</a></span><span class="op">(</span><span class="op">~</span><span class="va">cyl</span> <span class="op">&gt;</span> <span class="fl">4</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">pull_</span><span class="op">(</span><span class="op">~</span><span class="va">mpg</span><span class="op">)</span></span></span>
