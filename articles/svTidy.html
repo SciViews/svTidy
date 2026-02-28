@@ -406,16 +406,13 @@ in a standard way (unless you process them in a special way using
 <span><span class="co">#&gt; 1 1 FALSE  1</span></span>
 <span><span class="co">#&gt; 2 3 FALSE  9</span></span>
 <span><span class="co">#&gt; 3 8 FALSE 64</span></span></code></pre></div>
-<p>Finally, if you need to replace one or more variables in formulas,
-the same way injection does for Tidyverse, you must activate the
-<strong>“macro expansion”</strong> mechanism of {svTidy} by setting
-<code>. __macros__. &lt;- TRUE</code> at the beginning of the body of
-your function. Then, all variables in a formula that point to other
-formulas will be replaced in the initial expression before it is
-evaluated:</p>
+<p>Finally, you can replace one or more variables inside the right-hand
+side of formulas, the same way indirection does for Tidyverse without
+any special notation (note that you can inactivate it with
+<code>.__indirection__. &lt;- FALSE</code> in the function, if
+needed).</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_mutate_svTidy3</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">name</span>, <span class="va">var</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">.__macros__.</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
 <span>  <span class="fu"><a href="../reference/mutating.html">mutate_</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">name</span> <span class="op">~</span> <span class="va">var</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu">my_mutate_svTidy3</span><span class="op">(</span><span class="va">df</span>, <span class="st">'x2'</span>, <span class="op">~</span><span class="va">x</span><span class="op">)</span></span>
@@ -563,8 +560,7 @@ way they are dealt with by the Tidyverse functions differ, as you can
 see. Now, here is the {svTidy} version:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_summarise_svTidy</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">subset</span>, <span class="va">selection</span>, <span class="va">group</span>, <span class="va">year</span>, <span class="va">var</span>, <span class="va">var2</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">.__macros__.</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
-<span>  <span class="va">fvar2</span> <span class="op">&lt;-</span> <span class="fu">svBase</span><span class="fu">::</span><span class="fu"><a href="https://www.sciviews.org/svBase/reference/f_.html" class="external-link">f_</a></span><span class="op">(</span><span class="va">var2</span><span class="op">)</span></span>
+<span>  <span class="va">fvar2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://www.sciviews.org/svBase/reference/f_.html" class="external-link">f_</a></span><span class="op">(</span><span class="va">var2</span><span class="op">)</span></span>
 <span>  <span class="va">.</span><span class="op">=</span> <span class="va">data</span></span>
 <span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/filtering.html">filter_</a></span><span class="op">(</span><span class="va">subset</span><span class="op">)</span></span>
 <span>  <span class="va">.</span><span class="op">=</span> <span class="fu"><a href="../reference/selecting.html">select_</a></span><span class="op">(</span><span class="va">selection</span><span class="op">)</span></span>
@@ -619,10 +615,10 @@ should prefer to directly use a formula for such arguments, like
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        7.54ms   7.98ms      124.   20.58KB     6.66</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy     927.97µs 966.59µs     <span style="text-decoration: underline;">1</span>023.    9.81KB     8.33</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        7.11ms   7.32ms      136.   20.58KB     6.58</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy     900.87µs  943.3µs     <span style="text-decoration: underline;">1</span>048.    9.81KB     8.30</span></span></code></pre></div>
 <p>In such a small dataset, we essentially measure the overhead of the
-two approaches, and we can see that {svTidy} is 8.3 times faster, and it
+two approaches, and we can see that {svTidy} is 7.8 times faster, and it
 requires 2.1 times less memory than {dplyr} in this case. With larger
 datasets, the overhead becomes negligible, and results will be
 different. However, for code to be incorporated in functions that can
