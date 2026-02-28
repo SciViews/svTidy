@@ -15,8 +15,8 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-library(dplyr) # Must be loaded before svTidy to avoid conflicts with _ functions!
-library(svTidy)
+library('svTidy')
+library_dplyr()
 ```
 
 > The {svTidy} package provides a set of functions to manipulate data frames in a tidy way (like {dplyr} and {tidyr} do), but by evaluating its arguments in a standard way, or by mean of formulas instead of data masking or tidy selection. This has several advantages over the Tidyverse equivalent functions and we will develop some of them here.
@@ -179,11 +179,10 @@ my_mutate_svTidy2 <- function(data, name, expr) {
 my_mutate_svTidy2(df, 'x2', df$x^2)
 ```
 
-Finally, if you need to replace one or more variables in formulas, the same way injection does for Tidyverse, you must activate the **"macro expansion"** mechanism of {svTidy} by setting `. __macros__. <- TRUE` at the beginning of the body of your function. Then, all variables in a formula that point to other formulas will be replaced in the initial expression before it is evaluated:
+Finally, you can replace one or more variables inside the right-hand side of formulas, the same way indirection does for Tidyverse without any special notation (note that you can inactivate it with `.__indirection__. <- FALSE` in the function, if needed).
 
 ```{r}
 my_mutate_svTidy3 <- function(data, name, var) {
-  .__macros__. <- TRUE
   mutate_(data, name ~ var^2)
 }
 my_mutate_svTidy3(df, 'x2', ~x)
@@ -268,8 +267,7 @@ Note that `var=` and `var2=` illustrate the two ways of defining a variable, by 
 
 ```{r}
 my_summarise_svTidy <- function(data, subset, selection, group, year, var, var2) {
-  .__macros__. <- TRUE
-  fvar2 <- svBase::f_(var2)
+  fvar2 <- f_(var2)
   .= data
   .= filter_(subset)
   .= select_(selection)

@@ -2,6 +2,8 @@
 
 *   More tests.
 
+*   `library_dplyr()` and `library_tidyr()` to load and attach {dplyr} and {tidyr} without exposing their functions that end with an underscore and that may conflict with {svTidy} functions.
+
 # svTidy 0.2.0
 
 *   Refactoring of the man pages (and splitting of SciViews functions into separate script files).
@@ -14,4 +16,4 @@
 
 # svTidy 0.1.0
 
-*   Initial version with code that was initially in svBase.
+*   Initial version with code that was initially in {svBase}.

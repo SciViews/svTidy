@@ -7,9 +7,9 @@ output: github_document
 ```{r, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>",
   fig.path = "man/figures/README-", out.width = "100%")
-library('dplyr') # TODO: use library_dplyr() instead
 library('collapse')
 library('svTidy')
+library_dplyr() # To avoid conflict with the functions ending with an underscore
 ```
 
 # 'SciViews::R' - Tidy Functions <a href="https://www.sciviews.org/svTidy"><img src="man/figures/logo.png" align="right" height="138" /></a>
@@ -136,7 +136,7 @@ Differences:
 
 2. All **NSE arguments are turned into formulas** by prepending them with a tilde `~`.
 
-3. The pipeline is replaced by a so-called **bullet-point** style using the `.=` pseudo-operator at the beginning of each step, conveying the idea of a list of instructions successively applied to the data. These are separate instructions, easier to debug than the single, extra-long expression of the Tidyverse pipeline. The whole is grouped together by curly braces `{ }`, a common R idiom to group several instructions. This style is also possible thanks to the **"data-dot"** mechanism of {svTidy} functions that automatically insert the dot `.` as default first argument of the function when no data frame is provided [TODO: link to a vignette that explains this].
+3. Optionally, the pipeline is replaced by a so-called **bullet-point** style using the `.=` pseudo-operator at the beginning of each step, conveying the idea of a list of instructions successively applied to the data. These are separate instructions, easier to debug than the single, extra-long expression of the Tidyverse pipeline. The whole is grouped together by curly braces `{ }`, a common R idiom to group several instructions. This style is also possible thanks to the **"data-dot"** mechanism of {svTidy} functions that automatically insert the dot `.` as default first argument of the function when no data frame is provided [TODO: link to a vignette that explains this].
 
 Now, if you want to generalize this code to other datasets, you could be tempted to place it in a function. With {dplyr}, you have to take care of NSE in a non-trivial way and understand what **quasi-quotation** (or **indirection**) is, how to use `:=` for **name injection**, ... (the [Programming with dplyr](https://dplyr.tidyverse.org/articles/programming.html) vignette details all this). Here is a version of the above code in a function with {dplyr}, then, with {svTidy}:
 
@@ -153,7 +153,6 @@ ages_dplyr <- function(data, subset, var, year, group) {
     )
 }
 ages_svTidy <- function(data, subset, var, year, group) {
-  .__macros__. <- TRUE
   .= data
   .= filter_(subset) # Just replace the expression with the arg name
   .= mutate_(var ~ birth_year + year) # Name on the left of the formula
@@ -181,7 +180,6 @@ Some more improvement in `summarise_()` can be done by using {collapse} **fast s
 ```{r functions2}
 library('collapse')
 ages_fast <- function(data, subset, var, year, group) {
-  .__macros__. <- TRUE
   .= data
   .= filter_(subset)
   .= mutate_(var ~ birth_year + year)

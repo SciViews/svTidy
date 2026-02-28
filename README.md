@@ -207,12 +207,12 @@ Differences:
 2.  All **NSE arguments are turned into formulas** by prepending them
     with a tilde `~`.
 
-3.  The pipeline is replaced by a so-called **bullet-point** style using
-    the `.=` pseudo-operator at the beginning of each step, conveying
-    the idea of a list of instructions successively applied to the data.
-    These are separate instructions, easier to debug than the single,
-    extra-long expression of the Tidyverse pipeline. The whole is
-    grouped together by curly braces `{ }`, a common R idiom to group
+3.  Optionally, the pipeline is replaced by a so-called **bullet-point**
+    style using the `.=` pseudo-operator at the beginning of each step,
+    conveying the idea of a list of instructions successively applied to
+    the data. These are separate instructions, easier to debug than the
+    single, extra-long expression of the Tidyverse pipeline. The whole
+    is grouped together by curly braces `{ }`, a common R idiom to group
     several instructions. This style is also possible thanks to the
     **“data-dot”** mechanism of {svTidy} functions that automatically
     insert the dot `.` as default first argument of the function when no
@@ -241,7 +241,6 @@ ages_dplyr <- function(data, subset, var, year, group) {
     )
 }
 ages_svTidy <- function(data, subset, var, year, group) {
-  .__macros__. <- TRUE
   .= data
   .= filter_(subset) # Just replace the expression with the arg name
   .= mutate_(var ~ birth_year + year) # Name on the left of the formula
@@ -283,7 +282,6 @@ Some more improvement in `summarise_()` can be done by using {collapse}
 ``` r
 library('collapse')
 ages_fast <- function(data, subset, var, year, group) {
-  .__macros__. <- TRUE
   .= data
   .= filter_(subset)
   .= mutate_(var ~ birth_year + year)
@@ -312,14 +310,14 @@ bm
 #> # A tibble: 3 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 dplyr        1.34ms   1.45ms      670.    85.6KB    119. 
-#> 2 svTidy     169.37µs  197.7µs     5070.    37.3KB    103. 
-#> 3 fast       158.51µs 174.17µs     5665.    35.6KB     29.1
+#> 1 dplyr        1.32ms   1.44ms      692.    85.6KB     98.2
+#> 2 svTidy     168.47µs 188.48µs     5311.    34.9KB     94.1
+#> 3 fast       160.72µs 180.89µs     5526.    34.2KB     37.5
 ```
 
 With such a small dataset, we essentially measure the overhead of the
-different approaches, and we can see that {svTidy} (fast version) is 8.3
-times faster, and it requires 2.4 times less memory than {dplyr} in this
+different approaches, and we can see that {svTidy} (fast version) is 8
+times faster, and it requires 2.5 times less memory than {dplyr} in this
 case. This is because {svTidy} uses a more lightweight mechanism thanks
 to the formulas, and also (although of limited impact on small datasets)
 because it relies on efficient {collapse} or {data.table} code to do the
