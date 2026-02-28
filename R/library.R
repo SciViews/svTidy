@@ -30,7 +30,7 @@ library_dplyr <- function(..., exclude) {
       "mutate_each_", "rename_", "rename_vars_", "select_", "select_vars_",
       "slice_", "summarise_", "summarise_each_", "summarize_",
       "summarize_each_", "tally_", "transmute_")
-  .library('dplyr', exclude = exclude, ...)
+  suppressWarnings(.library('dplyr', exclude = exclude, ...))
 }
 
 #' @rdname library_dplyr
@@ -40,7 +40,7 @@ library_tidyr <- function(..., exclude) {
     exclude <- c("complete_", "crossing_", "drop_na_", "expand_", "extract_",
       "fill_", "gather_", "nest_", "nesting_", "separate_", "separate_rows_",
       "spread_", "unite_", "unnest_")
-  .library('tidyr', exclude = exclude, ...)
+  suppressWarnings(.library('tidyr', exclude = exclude, ...))
 }
 
 .library <- library # To avoid a warning in R CMD check
