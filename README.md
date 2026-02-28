@@ -94,8 +94,8 @@ than data masking or tidy selection in {dplyr}:
 res_lm <- lm(data = starwars, mass ~ height^2)
 
 # {svTidy} function used in NSE mode with a formula
-var <- "height2"
-res <- mutate_(.data = starwars, var ~ height^2)
+varname <- "height2"
+res <- mutate_(.data = starwars, varname ~ height^2)
 res[1:3, c('name', 'height', 'height2')]
 #> # A tibble: 3 × 3
 #>   name           height height2
@@ -109,8 +109,8 @@ There are many similarities between the call to `lm()` and to
 `mutate_()` above, with a common template being
 `<fun>(data = <df>, <formula>)`. Also note the clean way to define the
 name of a new variable with {svTidy} by indicating it at the left-hand
-side of the formula (`namevar ~ expr` when its name is stored in
-`namevar`, or directly with `'name' ~ expr`). This is arguably much
+side of the formula (`varname ~ expr` when its name is stored in
+`varname`, or directly with `'name' ~ expr`). This is arguably much
 smoother than the `:=` and `{{ }}` operators needed in {dplyr} for
 **name injection**, resulting in code that is so different to base R
 syntax:
@@ -312,13 +312,13 @@ bm
 #> # A tibble: 3 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 dplyr        1.36ms   1.51ms      646.    85.6KB    116. 
-#> 2 svTidy     171.34µs 196.14µs     4944.    37.3KB    104. 
-#> 3 fast       161.95µs 183.84µs     5354.    35.6KB     27.1
+#> 1 dplyr        1.34ms   1.45ms      670.    85.6KB    119. 
+#> 2 svTidy     169.37µs  197.7µs     5070.    37.3KB    103. 
+#> 3 fast       158.51µs 174.17µs     5665.    35.6KB     29.1
 ```
 
 With such a small dataset, we essentially measure the overhead of the
-different approaches, and we can see that {svTidy} (fast version) is 8.2
+different approaches, and we can see that {svTidy} (fast version) is 8.3
 times faster, and it requires 2.4 times less memory than {dplyr} in this
 case. This is because {svTidy} uses a more lightweight mechanism thanks
 to the formulas, and also (although of limited impact on small datasets)

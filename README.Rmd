@@ -60,11 +60,11 @@ The formula interface, also called **"formula masking"**, is more similar to man
 res_lm <- lm(data = starwars, mass ~ height^2)
 
 # {svTidy} function used in NSE mode with a formula
-var <- "height2"
-res <- mutate_(.data = starwars, var ~ height^2)
+varname <- "height2"
+res <- mutate_(.data = starwars, varname ~ height^2)
 res[1:3, c('name', 'height', 'height2')]
 ```
-There are many similarities between the call to `lm()` and to `mutate_()` above, with a common template being `<fun>(data = <df>, <formula>)`. Also note the clean way to define the name of a new variable with {svTidy} by indicating it at the left-hand side of the formula (`namevar ~ expr` when its name is stored in `namevar`, or directly with `'name' ~ expr`). This is arguably much smoother than the `:=` and `{{ }}` operators needed in {dplyr} for **name injection**, resulting in code that is so different to base R syntax:
+There are many similarities between the call to `lm()` and to `mutate_()` above, with a common template being `<fun>(data = <df>, <formula>)`. Also note the clean way to define the name of a new variable with {svTidy} by indicating it at the left-hand side of the formula (`varname ~ expr` when its name is stored in `varname`, or directly with `'name' ~ expr`). This is arguably much smoother than the `:=` and `{{ }}` operators needed in {dplyr} for **name injection**, resulting in code that is so different to base R syntax:
 
 ```{r, dplyr-var-name}
 # {dplyr} version
