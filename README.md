@@ -17,12 +17,125 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-SciViews equivalent functions of {dplyr} and {tidyr}, but faster and
-using a standard evaluation of arguments or formulas.
+> {svTidy} provides functions equivalent to
+> [{dplyr}](https://dplyr.tidyverse.org) and
+> [{tidyr}](https://tidyr.tidyverse.org), but using either a standard
+> evaluation of arguments or formulas, both being closer to base R
+> syntax. Its function are also usually faster and consume less RAM.
+
+{svTidy} function names are the same as the {dplyr} or {tidyr} ones, but
+with an underscore at the end (e.g., `filter_()`, `select_()`,
+`mutate_()`, `pivot_longer_()`…). They accept standard evaluation (SE)
+of their arguments, similar to most base R functions, making them less
+alien to base R users:
+
+``` r
+data('starwars', package = 'dplyr')
+
+# Subsetting with base R
+starwars[starwars$eye_color == "hazel", c('name', 'height', 'mass')]
+#> # A tibble: 3 × 3
+#>   name           height  mass
+#>   <chr>           <int> <dbl>
+#> 1 Wedge Antilles    170    77
+#> 2 Ayla Secura       178    55
+#> 3 Rey                NA    NA
+
+# Subsetting with {svTidy}, SE mode
+starwars |>
+  filter_(starwars$eye_color == "hazel") |>
+  select_(c('name', 'height', 'mass'))
+#> # A tibble: 3 × 3
+#>   name           height  mass
+#>   <chr>           <int> <dbl>
+#> 1 Wedge Antilles    170    77
+#> 2 Ayla Secura       178    55
+#> 3 Rey                NA    NA
+```
+
+They also accept **formula** arguments that implement a non-standard
+evaluation (NSE) similar to the [Tidyverse](https://tidyverse.org) DSL
+(domain-specific language), which is more familiar to {dplyr} and
+{tidyr} users. A tilde `~` is added at the beginning of the arguments
+that are evaluated in a non-standard way to turn them into formulas.
+*This conveys more explicitly the idea that they are evaluated in a
+special way:*
+
+``` r
+# {dplyr} code:
+starwars |>
+  filter(eye_color == "hazel") |> # data masking NSE
+  select(name:mass) # tidy selection NSE
+#> # A tibble: 3 × 3
+#>   name           height  mass
+#>   <chr>           <int> <dbl>
+#> 1 Wedge Antilles    170    77
+#> 2 Ayla Secura       178    55
+#> 3 Rey                NA    NA
+
+# {svTidy}, NSE mode
+starwars |>
+  filter_(~eye_color == "hazel") |> # formula masking NSE
+  select_(~name:mass) # idem
+#> # A tibble: 3 × 3
+#>   name           height  mass
+#>   <chr>           <int> <dbl>
+#> 1 Wedge Antilles    170    77
+#> 2 Ayla Secura       178    55
+#> 3 Rey                NA    NA
+```
+
+The formula interface, also called **“formula masking”**, is more
+similar to many base R functions that also use formulas (e.g., `lm()`)
+than data masking or tidy selection in {dplyr}:
+
+``` r
+# A base R function from {stats} using a formula interface
+res_lm <- lm(data = starwars, mass ~ height^2)
+
+# {svTidy} function used in NSE mode with a formula
+var <- "height2"
+res <- mutate_(.data = starwars, var ~ height^2)
+res[1:3, c('name', 'height', 'height2')]
+#> # A tibble: 3 × 3
+#>   name           height height2
+#>   <chr>           <int>   <dbl>
+#> 1 Luke Skywalker    172   29584
+#> 2 C-3PO             167   27889
+#> 3 R2-D2              96    9216
+```
+
+There are many similarities between the call to `lm()` and to
+`mutate_()` above, with a common template being
+`<fun>(data = <df>, <formula>)`. Also note the clean way to define the
+name of a new variable with {svTidy} by indicating it at the left of the
+formula (`namevar ~ expr` or `'name' ~ expr`). This is arguably much
+smoother than the `:=` and `{{ }}` operators needed in {dplyr},
+resulting in code that is so different to base R syntax:
+
+``` r
+# {dplyr} version
+var <- quo(height2) # You cannot just provide a string here!
+res2 <- mutate(.data = starwars, {{var}} := height^2)
+all.equal(res, res2)
+#> [1] TRUE
+```
+
+We got a leaner code thanks to formulas in {svTidy} for many advanced
+features. We will see another example with **injection** (or
+**quasi-quotation**) later in a **more complex example**.
 
 ## Installation
 
-You can install the development version of {svTidy} from
+You can install the development version of {svTidy} from the [SciViews
+R-unverse](https://sciviews.r-universe.dev) with:
+
+``` r
+install.packages('svTidy', repos = c('https://sciviews.r-universe.dev',
+  'https://cloud.r-project.org'))
+```
+
+Alternatively, you can also install it from
 [GitHub](https://github.com/) with:
 
 ``` r
@@ -30,27 +143,31 @@ You can install the development version of {svTidy} from
 pak::pak("SciViews/svTidy")
 ```
 
-## Example
+Being still in experimental stage, it is not available yet on
+[CRAN](https://cran.r-project.org), but it will be submitted as soon as
+it matures.
 
-This is a basic example which compares a rather classical Tidyverse
-pipeline using {dplyr} with the equivalent in {svTidy}. For all humans
-in the `starwars` dataset, we want the mean and standard deviation of
-their age, two years after the Battle of Yavin (note that `birth_year`
-is in years before that battle), grouped by their gender. We also want
-the number of non-missing observations in each group.
+## More complex example
+
+The best way to appreciate {svTidy} is by comparing it to {dplyr} on a
+more complex example. Still using the `starwars` dataset, let’s say we
+want to calculate the mean and standard deviation of the age of all
+humans, two years after the Battle of Yavin (note that `birth_year` is
+in years before that battle, so, you got it with `birth_date + 2` in
+years), grouped by their gender. We also want the number of non-missing
+observations in each group.
 
 ``` r
-library(dplyr, quietly = TRUE, warn.conflicts = FALSE)
-data(starwars)
+# {dplyr} version
 ages_dplyr <-
   starwars |>
   filter(species == "Human") |>
-  mutate(age = 2 + birth_year) |>
+  mutate(age = birth_year + 2) |>
   group_by(gender) |>
   summarise(
-    mean_age  = mean(age, na.rm = TRUE),
-    sd_age    = sd(age, na.rm = TRUE),
-    n_age     = sum(!is.na(age))
+    mean_age = mean(age, na.rm = TRUE),
+    sd_age   = sd(age, na.rm = TRUE),
+    n_age    = sum(!is.na(age))
   )
 ages_dplyr
 #> # A tibble: 2 × 4
@@ -60,60 +177,60 @@ ages_dplyr
 #> 2 masculine     57.5   25.4    21
 ```
 
-Here is the {svTidy} version (can you spot the three differences?):
+Here is the {svTidy} version (can you spot the three sets of
+differences?):
 
 ``` r
-library(svTidy, quietly = TRUE, warn.conflicts = FALSE)
-#> Registered S3 methods overwritten by 'svMisc':
-#>   method        from  
-#>   print.section svBase
-#>   str.section   svBase
+# {svTidy} version
 ages_svTidy <- {
   .= starwars
   .= filter_(~species == "Human")
-  .= mutate_(age = ~2 + birth_year)
+  .= mutate_(age = ~birth_year + 2)
   .= group_by_(~gender)
   .= summarise_(
-    mean_age  = ~mean(age, na.rm = TRUE),
-    sd_age    = ~sd(age, na.rm = TRUE),
-    n_age     = ~sum(!is.na(age))
+    mean_age = ~mean(age, na.rm = TRUE),
+    sd_age   = ~sd(age, na.rm = TRUE),
+    n_age    = ~sum(!is.na(age))
   )
 }
-identical(ages_dplyr, ages_svTidy)
+all.equal(ages_dplyr, ages_svTidy)
 #> [1] TRUE
 ```
 
 Differences:
 
-1.  The pipeline is replaced by a so-called **bullet-point** style using
+1.  {svTidy} functions have same name as the {dplyr} ones, but with an
+    **underscore at the end**.
+
+2.  All **NSE arguments are turned into formulas** by prepending them
+    with a tilde `~`.
+
+3.  The pipeline is replaced by a so-called **bullet-point** style using
     the `.=` pseudo-operator at the beginning of each step, conveying
     the idea of a list of instructions successively applied to the data.
     These are separate instructions, easier to debug than the single,
-    extra-long expression as in the Tidyverse pipeline. The whole is
-    grouped together by curly braces `{ }`, which is a common R idiom to
-    group several instructions.
-
-2.  {svTidy} functions have same name as the {dplyr} ones, but with an
-    **underscore at the end**.
-
-3.  All arguments that are **not** evaluated in a standard way are
-    expressed as **formulas** (starting with a tilde `~`) in the
-    {svTidy} functions. This conveys more explicitly the idea that they
-    are evaluated in a special way… and it has other advantages; Read
-    here under…
+    extra-long expression of the Tidyverse pipeline. The whole is
+    grouped together by curly braces `{ }`, a common R idiom to group
+    several instructions. This is also possible thanks to the
+    **“data-dot”** mechanism of {svTidy} functions that automatically
+    inserts the dot `.` as default first argument of the function when
+    no data frame is provided \[TODO: link to a vignette that explains
+    this\].
 
 Now, if you want to generalize this code to other datasets, you could be
 tempted to place it in a function. With {dplyr}, you have to take care
-of non-standard evaluation in a non trivial way and understand what
-**quasi-quotation** is, how to use `:=` for **variables in names**, …
-Here is a version of the above code in a function with {dplyr}, then,
-with {svTidy}:
+of NSE in a non trivial way and understand what **quasi-quotation** (or
+**indirection**) is, how to use `:=` for **name injection**, … (the
+[Programming with
+dplyr](https://dplyr.tidyverse.org/articles/programming.html) vignettes
+details all this). Here is a version of the above code in a function
+with {dplyr}, then, with {svTidy}:
 
 ``` r
 ages_dplyr <- function(data, subset, var, year, group) {
   data |>
-    filter({{ subset }}) |>
-    mutate({{var}} := .env$year + .data$birth_year) |>
+    filter({{ subset }}) |> # Indirection
+    mutate({{var}} := .data$birth_year + .env$year) |> # Name injection + .data/.env
     group_by({{ group }}) |>
     summarise(
       "mean_{{var}}" := mean({{ var }}, na.rm = TRUE),
@@ -124,8 +241,8 @@ ages_dplyr <- function(data, subset, var, year, group) {
 ages_svTidy <- function(data, subset, var, year, group) {
   .__macros__. <- TRUE
   .= data
-  .= filter_(subset)
-  .= mutate_(var ~ year + birth_year)
+  .= filter_(subset) # Just replace the expression with the arg name
+  .= mutate_(var ~ birth_year + year) # Name on the left-of the formula
   .= group_by_(group)
   .= summarise_(
     "mean_{{var}}" ~ mean(var, na.rm = TRUE),
@@ -136,16 +253,16 @@ ages_svTidy <- function(data, subset, var, year, group) {
 ```
 
 The {dplyr} version needs substantial edition of the code to include it
-in a function and exhibits ultimatelly a less readable result that
+in a function and exhibits ultimately a less readable result that
 {svTidy} that generalizes the code more smoothly. Here is the result of
-using these functions:
+using these two functions:
 
 ``` r
-ages_dplyr2 <- ages_dplyr(starwars, species == "Human", age, 2, gender)
-ages_svTidy2 <- ages_svTidy(starwars, ~species == "Human", ~age, 2, ~gender)
-identical(ages_dplyr2, ages_svTidy2)
+ages_dplyr_res <- ages_dplyr(starwars, species == "Human", age, 2, gender)
+ages_svTidy_res <- ages_svTidy(starwars, ~species == "Human", ~age, 2, ~gender)
+all.equal(ages_dplyr_res, ages_svTidy_res)
 #> [1] TRUE
-ages_dplyr2
+ages_dplyr_res
 #> # A tibble: 2 × 4
 #>   gender    mean_age sd_age n_age
 #>   <chr>        <dbl>  <dbl> <int>
@@ -153,35 +270,31 @@ ages_dplyr2
 #> 2 masculine     57.5   25.4    21
 ```
 
-Note that the `ages_svTidy()` function somehow “inherits” the properties
-of the underlying {svTidy} functions on the arguments that are evaluated
-in a non-standard way, that have to be provided as formulas.
+Note that `ages_svTidy()` arguments somehow naturally “inherits” the
+properties of the underlying {svTidy} functions: NSE expressions are to
+be provided as formulas. Consistency and clarity is an important feature
+of the code!
 
 Now, some more improvement in `summarise_()` can be done by using
 {collapse} **fast statistical functions**:
 
 ``` r
-library(collapse, quietly = TRUE, warn.conflicts = FALSE)
-#> collapse 2.1.0, see ?`collapse-package` or ?`collapse-documentation`
-ages_svTidy_fast <- function(data, subset, var, year, group) {
+library('collapse')
+ages_fast <- function(data, subset, var, year, group) {
   .__macros__. <- TRUE
   .= data
   .= filter_(subset)
-  .= mutate_(var ~ year + birth_year)
+  .= mutate_(var ~ birth_year + year)
   .= group_by_(group)
   .= summarise_(
-    "mean_{{var}}" ~ fmean(var),
-    "sd_{{var}}"   ~ fsd(var),
-    "n_{{var}}"    ~ fnobs(var)
+    "mean_{{var}}" ~ fmean(var), # na.rm = TRUE by default
+    "sd_{{var}}"   ~ fsd(var),   # Idem
+    "n_{{var}}"    ~ fnobs(var)  # Same as sum(!is.na(var))
   )
 }
-ages_svTidy3 <- ages_svTidy_fast(starwars, ~species == "Human", ~age, 2, ~gender)
-ages_svTidy3 # Note: there is a slight difference in the last decimals
-#> # A tibble: 2 × 4
-#>   gender    mean_age sd_age n_age
-#>   <chr>        <dbl>  <dbl> <int>
-#> 1 feminine      48.4   18.8     5
-#> 2 masculine     57.5   25.4    21
+ages_fast_res <- ages_fast(starwars, ~species == "Human", ~age, 2, ~gender)
+all.equal(ages_dplyr_res, ages_fast_res)
+#> [1] TRUE
 ```
 
 Now, let’s compare {dplyr} and {svTidy} in terms of speed and memory
@@ -189,23 +302,48 @@ use:
 
 ``` r
 bm <- bench::mark(
-  dplyr = ages_dplyr(starwars, species == "Human", age, 2, gender),
-  svTidy = ages_svTidy_fast(starwars, ~species == "Human", ~age, 2, ~gender)
+  dplyr  = ages_dplyr(starwars, species == "Human", age, 2, gender),
+  svTidy = ages_svTidy(starwars, ~species == "Human", ~age, 2, ~gender),
+  fast   = ages_fast(starwars, ~species == "Human", ~age, 2, ~gender)
 )
 bm
-#> # A tibble: 2 × 6
+#> # A tibble: 3 × 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 dplyr        1.31ms   1.36ms      722.    85.6KB     113.
-#> 2 svTidy     155.76µs 163.86µs     5988.    36.6KB     104.
+#> 1 dplyr        1.31ms   1.38ms      720.    85.6KB    128. 
+#> 2 svTidy     166.62µs 182.82µs     5150.    37.3KB     93.3
+#> 3 fast       159.86µs 171.67µs     5766.    35.6KB     29.1
 ```
 
 With such a small dataset, we essentially measure the overhead of the
-two approaches, and we can see that {svTidy} is 8.3 times faster, and it
-requires 2.3 times less memory than {dplyr} in this case. Of course,
-result vary with the functions used and size of the datasets.
+different approaches, and we can see that {svTidy} (fast version) is 8
+times faster, and it requires 2.4 times less memory than {dplyr} in this
+case. This is because {svTidy} uses a more lightweight mechanisms thanks
+to the formulas, and also (although of limited impact on small datasets)
+because it relies on efficient {collapse} or {data.table} code to do the
+computation. Of course, result vary with the functions used and the
+dataset size.
 
-For further instructions, please, refer to the help pages at
+Not shown here, but if you want to include these functions in an R
+package, you will have some trouble with the {dplyr} version and
+`R CMD check` will complain, unless you take some precautions like
+reexporting the `.data` and `.env` pronouns… The {svTidy} version can be
+used in an R package without any special care. But that’s another story,
+and another step in the complexity of the Tidyverse mechanisms that is
+avoided by {svTidy}.
+
+> Please, note that this comparison is not meant to criticise the
+> Tidyverse, {dplyr} or {tidyr}. If {svTidy} follows the same API, it is
+> because we praise it as an excellent modular set of functions to
+> manipulate data frames. We just want to provide an alternative that is
+> more consistent with base R syntax and semantics, and that is more
+> efficient in terms of speed and memory use, when feasible. As great is
+> the Tidyverse, it is not the only solution. The R ecosystem is large
+> and diverse. It encourage exploration of new ideas and this is
+> precisely what we do here with {svTidy}, in full respect to the huge
+> work done by Hadley Wickham and a group of very talented contributors!
+
+For further instructions, refer to the help pages at
 <https://www.sciviews.org/svTidy/>.
 
 ## Code of Conduct
