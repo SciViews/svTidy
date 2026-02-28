@@ -615,8 +615,8 @@ should prefer to directly use a formula for such arguments, like
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        7.11ms   7.32ms      136.   20.58KB     6.58</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy     900.87µs  943.3µs     <span style="text-decoration: underline;">1</span>048.    9.81KB     8.30</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        7.41ms   7.52ms      132.   20.58KB     6.70</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy     932.45µs 970.71µs     <span style="text-decoration: underline;">1</span>020.    9.81KB     8.33</span></span></code></pre></div>
 <p>In such a small dataset, we essentially measure the overhead of the
 two approaches, and we can see that {svTidy} is 7.8 times faster, and it
 requires 2.1 times less memory than {dplyr} in this case. With larger
