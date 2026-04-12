@@ -146,6 +146,10 @@ lacking many important parts in its present state.</p>
 <span><span class="co">#iris |&gt;</span></span>
 <span><span class="co">#  sgroup_by(Species) |&gt;</span></span>
 <span><span class="co">#  ssummarise(n = n(), mean = fmean(Sepal.Length))</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="arrange_">
+<code>arrange_()</code><a class="anchor" aria-label="anchor" href="#arrange_"></a>
+</h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span>
 <span><span class="co">#mtcars_ &lt;- svBase::as_dtrm(mtcars)</span></span>
@@ -157,9 +161,9 @@ lacking many important parts in its present state.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        2.28ms   2.34ms      423.    1.81MB     6.25</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidySE    58.55µs  62.83µs    <span style="text-decoration: underline;">15</span>271.  312.84KB     8.53</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> svTidyNSE   99.17µs 104.26µs     <span style="text-decoration: underline;">9</span>263.   87.22KB     6.18</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr           2ms   2.07ms      480.    1.81MB     8.38</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidySE       45µs  49.14µs    <span style="text-decoration: underline;">19</span>745.  312.84KB     8.51</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> svTidyNSE    75.6µs  81.63µs    <span style="text-decoration: underline;">11</span>908.   87.22KB    10.5</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">babynames</span>, package <span class="op">=</span> <span class="st">'babynames'</span><span class="op">)</span></span>
 <span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span>check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -169,9 +173,14 @@ lacking many important parts in its present state.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        71.5ms   71.5ms      14.0   343.5MB     83.9</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidySE     25.5ms   26.8ms      37.3    73.4MB     74.5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> svTidyNSE    24.7ms   25.4ms      38.8    73.4MB     33.2</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        74.7ms   74.7ms      13.4   343.5MB     66.9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidySE     25.6ms   26.3ms      36.0    73.4MB     43.2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> svTidyNSE    25.3ms   26.5ms      36.6    73.4MB     48.7</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="bind_rows_-and-bind_cols_">
+<code>bind_rows_()</code> and <code>bind_cols_()</code><a class="anchor" aria-label="anchor" href="#bind_rows_-and-bind_cols_"></a>
+</h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, y <span class="op">=</span> <span class="va">letters</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span>check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -183,11 +192,11 @@ lacking many important parts in its present state.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr          83µs   87.1µs    <span style="text-decoration: underline;">11</span>118.   96.35KB     8.59</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy      170.7µs  178.2µs     <span style="text-decoration: underline;">5</span>449.    1.94MB     6.28</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> svTidy2     169.4µs    178µs     <span style="text-decoration: underline;">5</span>453.   32.25KB     8.50</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> data.table   92.4µs   96.1µs    <span style="text-decoration: underline;">10</span>009.   16.12KB     6.29</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> base         69.4µs   74.7µs    <span style="text-decoration: underline;">12</span>885.        0B     8.80</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr          65µs   71.2µs    <span style="text-decoration: underline;">13</span>503.   96.35KB     9.20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy      143.5µs  153.8µs     <span style="text-decoration: underline;">6</span>294.    1.94MB     8.50</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> svTidy2     143.2µs  153.2µs     <span style="text-decoration: underline;">6</span>360.   32.25KB     8.49</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> data.table   81.8µs   86.4µs    <span style="text-decoration: underline;">11</span>228.   16.12KB     8.56</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> base         56.8µs     61µs    <span style="text-decoration: underline;">15</span>691.        0B    10.7</span></span></code></pre></div>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">babynames</span>, package <span class="op">=</span> <span class="st">'babynames'</span><span class="op">)</span></span>
 <span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span>check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -201,11 +210,11 @@ lacking many important parts in its present state.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr       78.54ms  112.5ms     7.07      362MB     5.30</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy        1.31s    1.31s     0.765     368MB     1.53</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> svTidy2       1.57s    1.57s     0.637     338MB     1.27</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> data.table   42.3ms  66.74ms    17.5       132MB     9.71</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> base       174.99ms 177.13ms     4.20      264MB     5.60</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr       87.62ms 113.19ms     6.93      362MB    5.19 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy        1.45s    1.45s     0.690     368MB    1.38 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> svTidy2       1.39s    1.39s     0.721     338MB    0.721</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> data.table  42.92ms  68.11ms    15.2       132MB    7.62 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> base       166.14ms 183.71ms     5.53      264MB    3.69</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, y <span class="op">=</span> <span class="va">letters</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>z <span class="op">=</span> <span class="fl">10</span><span class="op">:</span><span class="fl">11</span>, w <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fl">5</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span><span class="op">)</span></span>
@@ -217,10 +226,10 @@ lacking many important parts in its present state.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr       124.1µs  130.6µs     <span style="text-decoration: underline;">7</span>446.    32.9KB     2.09</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy      129.7µs  137.2µs     <span style="text-decoration: underline;">7</span>078.    13.9KB     2.09</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> data.table   29.3µs   31.3µs    <span style="text-decoration: underline;">31</span>103.    17.7KB     3.11</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> base           29µs   31.3µs    <span style="text-decoration: underline;">31</span>140.        0B     3.11</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        97.1µs  105.2µs     <span style="text-decoration: underline;">9</span>294.    32.9KB     2.13</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy        101µs  110.1µs     <span style="text-decoration: underline;">8</span>870.    13.9KB     4.39</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> data.table   25.8µs   27.9µs    <span style="text-decoration: underline;">35</span>058.    17.7KB     3.51</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> base         25.7µs   27.9µs    <span style="text-decoration: underline;">35</span>096.        0B     3.51</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">babynames</span>, package <span class="op">=</span> <span class="st">'babynames'</span><span class="op">)</span></span>
 <span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span>check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -228,8 +237,6 @@ lacking many important parts in its present state.</p>
 <span>  svTidy     <span class="op">=</span> <span class="fu"><a href="../reference/binding.html">bind_cols_</a></span><span class="op">(</span><span class="va">babynames</span>, <span class="va">babynames</span><span class="op">)</span>,</span>
 <span>  data.table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">babynames</span>, <span class="va">babynames</span><span class="op">)</span>,</span>
 <span>  base       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">babynames</span>, <span class="va">babynames</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; New names:</span></span>
-<span><span class="co">#&gt; New names:</span></span>
 <span><span class="co">#&gt; New names:</span></span>
 <span><span class="co">#&gt; New names:</span></span>
 <span><span class="co">#&gt; New names:</span></span>
@@ -259,10 +266,43 @@ lacking many important parts in its present state.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        73.9ms   74.6ms     12.9      232MB     1.84</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy       72.3ms   72.7ms     13.3      356KB     1.90</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> data.table  179.4ms  199.8ms      5.02     264MB     8.36</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> base          200ms  200.1ms      4.99     264MB     9.98</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        67.7ms     68ms     13.9      232MB     1.99</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy       68.1ms     69ms      9.11     356KB     1.82</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> data.table  171.2ms    207ms      4.96     264MB     4.96</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> base        243.6ms    284ms      3.52     264MB     5.28</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="filter_">
+<code>filter_()</code><a class="anchor" aria-label="anchor" href="#filter_"></a>
+</h2>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span>
+<span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span>check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  dplyr     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">mpg</span> <span class="op">&gt;</span> <span class="fl">20</span><span class="op">)</span>,</span>
+<span>  svTidySE  <span class="op">=</span> <span class="fu"><a href="../reference/filtering.html">filter_</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">mtcars</span><span class="op">$</span><span class="va">mpg</span> <span class="op">&gt;</span> <span class="fl">20</span><span class="op">)</span>,</span>
+<span>  svTidyNSE <span class="op">=</span> <span class="fu"><a href="../reference/filtering.html">filter_</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="op">~</span><span class="va">mpg</span> <span class="op">&gt;</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 6</span></span></span>
+<span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr       529.9µs  574.2µs     <span style="text-decoration: underline;">1</span>730.   208.1KB     2.13</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidySE     32.4µs   35.5µs    <span style="text-decoration: underline;">27</span>522.    45.5KB     2.75</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> svTidyNSE    36.9µs   40.4µs    <span style="text-decoration: underline;">24</span>206.    42.7KB     4.84</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">babynames</span>, package <span class="op">=</span> <span class="st">'babynames'</span><span class="op">)</span></span>
+<span><span class="va">babynames_dt</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/data.table/man/as.data.table.html" class="external-link">as.data.table</a></span><span class="op">(</span><span class="va">babynames</span><span class="op">)</span></span>
+<span><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://bench.r-lib.org/reference/mark.html" class="external-link">mark</a></span><span class="op">(</span>check <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  dplyr      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">babynames</span>, <span class="va">n</span> <span class="op">&gt;</span> <span class="fl">1000</span><span class="op">)</span>,</span>
+<span>  svTidySE   <span class="op">=</span> <span class="fu"><a href="../reference/filtering.html">filter_</a></span><span class="op">(</span><span class="va">babynames</span>, <span class="va">babynames</span><span class="op">$</span><span class="va">n</span> <span class="op">&gt;</span> <span class="fl">1000</span><span class="op">)</span>,</span>
+<span>  svTidyNSE  <span class="op">=</span> <span class="fu"><a href="../reference/filtering.html">filter_</a></span><span class="op">(</span><span class="va">babynames</span>, <span class="op">~</span><span class="va">n</span> <span class="op">&gt;</span> <span class="fl">1000</span><span class="op">)</span>,</span>
+<span>  data.table <span class="op">=</span> <span class="va">babynames_dt</span><span class="op">[</span><span class="va">n</span> <span class="op">&gt;</span> <span class="fl">1000</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 6</span></span></span>
+<span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        12.5ms  12.59ms      78.7    31.4MB     16.6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidySE     5.04ms   5.69ms     177.     16.7MB     17.1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> svTidyNSE    5.08ms   5.61ms     178.     16.7MB     13.3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> data.table   8.17ms   8.22ms     121.     16.9MB     13.8</span></span></code></pre></div>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
