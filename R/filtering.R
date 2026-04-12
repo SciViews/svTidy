@@ -9,15 +9,17 @@
 #'
 #' **Functions:**
 #' * `filter_()` - Keep rows that match conditions
+#' * `filter_out_()` - Remove rows that match conditions (inverse of `filter_()`)
 #' * `distinct_()` - Keep only unique/distinct rows based on columns
 #' * `slice_()` - Select rows by position (index)
 #' * `slice_head_()` - Select first n rows or proportion
 #' * `slice_tail_()` - Select last n rows or proportion
 #'
 #' @param .data A data frame (data.frame, data.table, or tibble)
-#' @param ... For `filter_()`: conditions as formulas (e.g., `~mpg > 20`).
-#'   For `distinct_()`: columns to use for uniqueness.
+#' @param ... For `filter_()` and `filter_out_()`: conditions as formulas
+#'   (e.g., `~mpg > 20`). For `distinct_()`: columns to use for uniqueness.
 #'   For `slice_()`: row positions.
+# ...existing code...
 #' @param .by A list of names of the columns to use for grouping the data.
 #' @param by A list of names of the columns to use for grouping the data.
 #' @param .preserve Logical. When `TRUE`, preserve the grouping structure in
@@ -40,6 +42,9 @@
 #'
 #' # Filter rows with condition
 #' mtcars |> filter_(~mpg > 20)
+#'
+#' # Remove rows matching condition (inverse of filter_())
+#' mtcars |> filter_out_(~mpg > 20)
 #'
 #' # Multiple conditions (AND logic)
 #' mtcars |> filter_(~mpg > 20, ~cyl == 4)
@@ -64,6 +69,7 @@
 #'   group_by_(~cyl) |>
 #'   filter_(~mpg > mean(~mpg))
 #'
+# ...existing code...
 #' @name filtering
 #' @export
 #' @rdname filtering
@@ -189,6 +195,123 @@ filter_ <- structure(function(.data = (.), ..., .by = NULL, .preserve = FALSE) {
   res
 }, class = c("function", "sciviews_fn"),
   comment = .src_sciviews("dplyr::filter"))
+
+#' @export
+#' @rdname filtering
+filter_out_ <- structure(function(.data = (.), ..., .by = NULL,
+  .preserve = FALSE) {
+
+  if (!prepare_data_dot(.data))
+    return(recall_with_data_dot())
+
+  # Case missing(...), just return the data frame unchanged
+  if (missing(...))
+    return(.data)
+
+  # We do not support .preserve = TRUE
+  if (isTRUE(.preserve)) {
+    stop(
+      "Argument {.code .preserve = TRUE} is not supported in {.fun filter_out_}.",
+      i = "The groups are kept, but they are recalculated on the filtered data frame.")
+  }
+
+  # Process dots with formula-masking
+  is_grouped <- is_grouped_df(.data)
+  if (is_grouped) {
+    new_gvars <- fgroup_vars(.data, return = "names")
+  } else {
+    new_gvars <- character(0)
+  }
+
+  no_se_msg <- gettext(
+    "Standard evaluation is not supported for grouped data frames.")
+  args <- formula_masking(..., .no.se = is_grouped, .no.se.msg = no_se_msg)
+
+  # If .by is defined, use these groups, but do not keep them
+  if (!missing(.by)) {
+    if (is_grouped)
+      stop("Can't supply {.arg .by} when {.arg .data} is a grouped data frame.")
+    if (!args$are_formulas)
+      stop(no_se_msg)
+    res <- group_by_vars(.data, by = .by, sort = FALSE)
+    new_gvars <- character(0) # Don't keep these groups
+  } else {
+    res <- .data
+  }
+
+  # No input can be named
+  dots_names <- names(args$dots)
+  if (!is.null(dots_names)) {
+    named <- whichv(dots_names, "", invert = TRUE)
+    if (length(named)) {
+      first_named <- named[1]
+      first_name <- dots_names[first_named]
+      first_expr <- expr_deparse(sys.call()[[first_name]])
+      if (first_expr == "NULL") {
+        stop("We detected a named input.",
+          i = "Did you used formula like {.code name ~ expr}?",
+          i = "You must filter with formula having only right member, like {.code ~expr}.")
+      } else {
+        msg_expr <- paste(first_name, first_expr, sep = " == ")
+        stop("We detected a named input.",
+          i = "This usually means that you've used {.code =} instead of {.code ==}.",
+          i = "Did you mean {.code {msg_expr}}?")
+      }
+    }
+  }
+
+  filters <- args$dots
+  # Negate all filters: keep rows where NOT all conditions are TRUE
+  if (args$are_formulas) {
+    if (is_grouped) {
+      subset_onegroup <- function(i, gdata, filters, envir) {
+        gdata <- gdata[i, ]
+        # Build a combined negated mask: !( cond1 & cond2 & ... )
+        mask <- NULL
+        for (j in seq_along(filters)) {
+          cond_mask <- eval(filters[[j]], envir = list2env(as.list(gdata),
+            parent = envir))
+          if (is.null(mask)) {
+            mask <- cond_mask
+          } else {
+            mask <- mask & cond_mask
+          }
+        }
+        gdata[!mask, ]
+      }
+      res <- add_vars(res, ._order_. = seq_len(nrow(res)))
+      res <- rowbind(lapply(gsplit(g = res), subset_onegroup, gdata = res,
+        filters = filters, envir = args$env))
+      res <- roworderv(res, cols = '._order_.', decreasing = FALSE)
+      res$._order_. <- NULL
+    } else {
+      # For non-grouped: negate each filter expression and apply fsubset
+      # We combine all into !( cond1 & cond2 & ... ) via a single fsubset call
+      combined <- filters[[1L]]
+      lfilters <- length(filters)
+      if (lfilters > 1L) {
+        for (i in 2:lfilters)
+          combined <- call("&", combined, filters[[i]])
+      }
+      negated <- call("!", combined)
+      res <- do.call(fsubset, list(.x = res, negated), envir = args$env)
+    }
+  } else {
+    # SE: combine with & then negate
+    filter <- filters[[1L]]
+    lfilters <- length(filters)
+    if (lfilters > 1L) {
+      for (i in 2:lfilters)
+        filter <- filter & filters[[i]]
+    }
+    res <- ss(res, !filter)
+  }
+
+  if (length(new_gvars))
+    res <- group_by_vars(res, by = new_gvars)
+  res
+}, class = c("function", "sciviews_fn"),
+  comment = .src_sciviews("dplyr::filter_out"))
 
 #' @export
 #' @rdname filtering

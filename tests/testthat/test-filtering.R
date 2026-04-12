@@ -95,7 +95,7 @@ test_that("filter_() works with is.na()", {
   df <- data.frame(x = c(1, 2, NA, 4), y = c(NA, "b", "c", "d"))
   result <- filter_(df, ~!is.na(x))
 
-  expect_false(any(is.na(result$x)))
+  expect_false(anyNA(result$x))
   expect_equal(nrow(result), 3)
 })
 
@@ -202,7 +202,7 @@ test_that("filter_() works with NA in conditions", {
   )
   result <- filter_(df, ~!is.na(y))
 
-  expect_false(any(is.na(result$y)))
+  expect_false(anyNA(result$y))
   expect_equal(nrow(result), 4)
 })
 
@@ -299,6 +299,110 @@ test_that("filter_() returns same structure with all rows when condition always 
 
   expect_equal(nrow(result), nrow(mtcars))
   expect_equal(ncol(result), ncol(mtcars))
+})
+
+test_that("filter_out_() removes rows matching condition", {
+  data(mtcars)
+  result <- filter_out_(mtcars, ~mpg > 20)
+
+  expect_s3_class(result, "data.frame")
+  expect_false(any(result$mpg > 20))
+  expect_equal(nrow(result), sum(mtcars$mpg <= 20))
+})
+
+test_that("filter_out_() is complement of filter_()", {
+  data(mtcars)
+  kept   <- filter_(mtcars, ~cyl == 4)
+  removed <- filter_out_(mtcars, ~cyl == 4)
+
+  expect_equal(nrow(kept) + nrow(removed), nrow(mtcars))
+  expect_false(any(removed$cyl == 4))
+})
+
+test_that("filter_out_() works with multiple conditions (AND logic)", {
+  data(mtcars)
+  result <- filter_out_(mtcars, ~mpg > 20, ~cyl == 4)
+
+  expected_mask <- !(mtcars$mpg > 20 & mtcars$cyl == 4)
+  expect_equal(nrow(result), sum(expected_mask))
+  expect_false(any(result$mpg > 20 & result$cyl == 4))
+})
+
+test_that("filter_out_() works with standard evaluation", {
+  data(mtcars)
+  result <- filter_out_(mtcars, mtcars$mpg > 20, mtcars$cyl == 4)
+
+  expected_mask <- !(mtcars$mpg > 20 & mtcars$cyl == 4)
+  expect_equal(nrow(result), sum(expected_mask))
+})
+
+test_that("filter_out_() with no conditions returns .data unchanged", {
+  data(mtcars)
+  result <- filter_out_(mtcars)
+
+  expect_equal(result, mtcars)
+})
+
+test_that("filter_out_() preserves data frame type", {
+  skip_if_not_installed("tibble")
+  skip_if_not_installed("data.table")
+
+  data(mtcars)
+
+  result_df <- filter_out_(mtcars, ~mpg > 20)
+  expect_s3_class(result_df, "data.frame")
+
+  tbl <- tibble::as_tibble(mtcars)
+  result_tbl <- filter_out_(tbl, ~mpg > 20)
+  expect_s3_class(result_tbl, "tbl_df")
+
+  dt <- data.table::as.data.table(mtcars)
+  result_dt <- filter_out_(dt, ~mpg > 20)
+  expect_s3_class(result_dt, "data.table")
+})
+
+test_that("filter_out_() preserves column order and names", {
+  data(mtcars)
+  result <- filter_out_(mtcars, ~mpg > 20)
+
+  expect_equal(names(result), names(mtcars))
+})
+
+test_that("filter_out_() returns all rows when condition never true", {
+  data(mtcars)
+  result <- filter_out_(mtcars, ~mpg > 1000)
+
+  expect_equal(nrow(result), nrow(mtcars))
+})
+
+test_that("filter_out_() returns empty data frame when all rows match", {
+  data(mtcars)
+  result <- filter_out_(mtcars, ~mpg > 0)
+
+  expect_equal(nrow(result), 0)
+  expect_equal(ncol(result), ncol(mtcars))
+})
+
+test_that("filter_out_() works with grouped data frames", {
+  data(mtcars)
+  mtcars_grouped <- group_by_(mtcars, ~cyl)
+  result <- filter_out_(mtcars_grouped, ~mpg > mean(mpg))
+
+  expect_true(is_grouped_df(result))
+  expect_equal(group_vars_(result), "cyl")
+  # Each group should retain only rows at or below the group mean
+  for (cyl_val in unique(result$cyl)) {
+    group_data   <- result[result$cyl == cyl_val, ]
+    group_mean   <- mean(mtcars[mtcars$cyl == cyl_val, "mpg"])
+    expect_true(all(group_data$mpg <= group_mean))
+  }
+})
+
+test_that("filter_out_() works with pipe operator", {
+  data(mtcars)
+  result <- mtcars |> filter_out_(~mpg > 20)
+
+  expect_false(any(result$mpg > 20))
 })
 
 test_that("distinct_() removes duplicate rows", {

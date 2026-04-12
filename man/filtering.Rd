@@ -3,6 +3,7 @@
 \name{filtering}
 \alias{filtering}
 \alias{filter_}
+\alias{filter_out_}
 \alias{distinct_}
 \alias{slice_}
 \alias{slice_head_}
@@ -10,6 +11,8 @@
 \title{Filter Rows and Slice Data Frames}
 \usage{
 filter_(.data = (.), ..., .by = NULL, .preserve = FALSE)
+
+filter_out_(.data = (.), ..., .by = NULL, .preserve = FALSE)
 
 distinct_(.data = (.), ..., .keep_all = FALSE, .method = "auto")
 
@@ -22,8 +25,8 @@ slice_tail_(.data = (.), ..., n = 1L, prop, by = NULL, sort = TRUE)
 \arguments{
 \item{.data}{A data frame (data.frame, data.table, or tibble)}
 
-\item{...}{For \code{filter_()}: conditions as formulas (e.g., \code{~mpg > 20}).
-For \code{distinct_()}: columns to use for uniqueness.
+\item{...}{For \code{filter_()} and \code{filter_out_()}: conditions as formulas
+(e.g., \code{~mpg > 20}). For \code{distinct_()}: columns to use for uniqueness.
 For \code{slice_()}: row positions.}
 
 \item{.by}{A list of names of the columns to use for grouping the data.}
@@ -65,6 +68,7 @@ evaluation and formula-based non-standard evaluation (ending with underscore
 \strong{Functions:}
 \itemize{
 \item \code{filter_()} - Keep rows that match conditions
+\item \code{filter_out_()} - Remove rows that match conditions (inverse of \code{filter_()})
 \item \code{distinct_()} - Keep only unique/distinct rows based on columns
 \item \code{slice_()} - Select rows by position (index)
 \item \code{slice_head_()} - Select first n rows or proportion
@@ -81,6 +85,9 @@ data(mtcars)
 
 # Filter rows with condition
 mtcars |> filter_(~mpg > 20)
+
+# Remove rows matching condition (inverse of filter_())
+mtcars |> filter_out_(~mpg > 20)
 
 # Multiple conditions (AND logic)
 mtcars |> filter_(~mpg > 20, ~cyl == 4)
