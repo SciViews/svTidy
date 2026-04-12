@@ -1,5 +1,7 @@
 # svTidy 0.2.1
 
+*   `filter_out_()` added.
+
 *   More tests.
 
 *   `library_dplyr()` and `library_tidyr()` to load and attach {dplyr} and {tidyr} without exposing their functions that end with an underscore and that may conflict with {svTidy} functions.
