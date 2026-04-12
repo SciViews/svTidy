@@ -19,3 +19,4 @@
 ^TODO\.md$
 data-raw
 ^.vscode$
+^CLAUDE\.md$
