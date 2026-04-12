@@ -39,6 +39,8 @@ options(collapse_mask = "all")
 
 ```
 
+## `arrange_()`
+
 ```{r}
 data(mtcars)
 #mtcars_ <- svBase::as_dtrm(mtcars)
@@ -56,6 +58,8 @@ bench::mark(check = FALSE,
   svTidySE  = arrange_(babynames, 'sex', '-n'),
   svTidyNSE = arrange_(babynames, ~sex, ~ -n))
 ```
+
+## `bind_rows_()` and `bind_cols_()`
 
 ```{r}
 df1 <- data.frame(x = 1:2, y = letters[1:2])
@@ -94,5 +98,25 @@ bench::mark(check = FALSE,
   svTidy     = bind_cols_(babynames, babynames),
   data.table = rbind(babynames, babynames),
   base       = rbind(babynames, babynames))
+```
+
+## `filter_()`
+
+```{r}
+data(mtcars)
+bench::mark(check = FALSE,
+  dplyr     = filter(mtcars, mpg > 20),
+  svTidySE  = filter_(mtcars, mtcars$mpg > 20),
+  svTidyNSE = filter_(mtcars, ~mpg > 20))
+```
+
+```{r}
+data(babynames, package = 'babynames')
+babynames_dt <- data.table::as.data.table(babynames)
+bench::mark(check = FALSE,
+  dplyr      = filter(babynames, n > 1000),
+  svTidySE   = filter_(babynames, babynames$n > 1000),
+  svTidyNSE  = filter_(babynames, ~n > 1000),
+  data.table = babynames_dt[n > 1000])
 ```
 
