@@ -118,7 +118,7 @@
                         <h4 data-toc-skip class="author">Philippe
 Grosjean</h4>
             
-            <h4 data-toc-skip class="date">2026-04-12</h4>
+            <h4 data-toc-skip class="date">2026-06-10</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/SciViews/svTidy/blob/main/vignettes/svTidy.Rmd" class="external-link"><code>vignettes/svTidy.Rmd</code></a></small>
       <div class="hidden name"><code>svTidy.Rmd</code></div>
@@ -615,10 +615,10 @@ should prefer to directly use a formula for such arguments, like
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 6</span></span></span>
 <span><span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr         6.8ms   6.88ms      144.   20.58KB     6.66</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy      755.9µs 800.73µs     <span style="text-decoration: underline;">1</span>232.    9.81KB    10.5</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> dplyr        6.84ms   6.93ms      143.   20.58KB     6.61</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> svTidy     760.32µs 820.17µs     <span style="text-decoration: underline;">1</span>205.    9.81KB    10.5</span></span></code></pre></div>
 <p>In such a small dataset, we essentially measure the overhead of the
-two approaches, and we can see that {svTidy} is 8.6 times faster, and it
+two approaches, and we can see that {svTidy} is 8.4 times faster, and it
 requires 2.1 times less memory than {dplyr} in this case. With larger
 datasets, the overhead becomes negligible, and results will be
 different. However, for code to be incorporated in functions that can
